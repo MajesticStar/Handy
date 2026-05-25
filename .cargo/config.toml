@@ -1,1 +1,5 @@
 [build]
+
+[env]
+SDKROOT = { value = "/Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk", force = true }
+CMAKE_POLICY_VERSION_MINIMUM = { value = "3.5", force = true }
