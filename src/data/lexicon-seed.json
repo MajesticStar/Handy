@@ -1,0 +1,1106 @@
+[
+  {
+    "id": "hh",
+    "term": "henry hub",
+    "aliases": ["natty", "henry", "ng", "hh", "natural gas", "nat gas"],
+    "expansion": "Henry Hub natural gas",
+    "token_class": "product",
+    "notes": "Benchmark/reference NG product. NYMEX code (per YJ): HB. Other NG products (basis hubs) quote relative to HH."
+  },
+
+  {
+    "id": "rockies",
+    "term": "rockies",
+    "aliases": ["rockys", "rox", "rocks", "northwest pipeline rockies"],
+    "expansion": "Rockies (Northwest Pipeline) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: IR. Western US."
+  },
+  {
+    "id": "sumas",
+    "term": "sumas",
+    "aliases": ["sum", "sumas wa", "sumas washington", "northwest pipeline sumas washington"],
+    "expansion": "Sumas, WA (Northwest Pipeline) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NK. WA/Canada border."
+  },
+  {
+    "id": "malin",
+    "term": "malin",
+    "aliases": ["mal", "pg&e malin", "pg&e malin oregon", "pg & e malin", "oregon"],
+    "expansion": "PG&E Malin, OR — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PB. Pacific Northwest."
+  },
+  {
+    "id": "waha",
+    "term": "waha",
+    "aliases": ["waha tx", "waha texas"],
+    "expansion": "Waha, TX — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NW. West Texas / Permian Basin region."
+  },
+  {
+    "id": "anr_lou",
+    "term": "anr lou",
+    "aliases": ["louisiana", "anr louisiana"],
+    "expansion": "ANR Louisiana — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: ND."
+  },
+  {
+    "id": "anr_ok",
+    "term": "anr ok",
+    "aliases": ["oklahoma"],
+    "expansion": "ANR Oklahoma — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NE."
+  },
+  {
+    "id": "aeco",
+    "term": "aeco",
+    "aliases": ["alberta", "alberta swap"],
+    "expansion": "AECO Alberta — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NA. Canadian benchmark."
+  },
+  {
+    "id": "centerpoint",
+    "term": "centerpoint",
+    "aliases": [],
+    "expansion": "Centerpoint — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PW."
+  },
+  {
+    "id": "nbi",
+    "term": "nbi",
+    "aliases": ["chicago", "chicago city gate", "chicago citygate"],
+    "expansion": "Chicago City Gate (NBI) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NB. Midwest delivery point."
+  },
+  {
+    "id": "cig",
+    "term": "cig",
+    "aliases": ["colorado", "colorado interstate", "colorado interstate gas"],
+    "expansion": "CIG (Colorado Interstate Gas) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: CI. Rocky Mountains."
+  },
+  {
+    "id": "tco",
+    "term": "tco",
+    "aliases": ["appalacia tco", "cgt app", "columbia appalacia", "columbia gas transmission appalachia"],
+    "expansion": "TCO Appalachia (Columbia Gas Transmission) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: TC. Appalachian production region."
+  },
+  {
+    "id": "cgt_onshore",
+    "term": "cgt onshore",
+    "aliases": ["gulf", "gulf onshore", "columbia gulf", "columbia gulf transmission onshore"],
+    "expansion": "Columbia Gulf Onshore — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: GL."
+  },
+  {
+    "id": "dawn",
+    "term": "dawn",
+    "aliases": ["dawn basis", "dawn swap"],
+    "expansion": "Dawn (Ontario) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: DW. Canadian hub."
+  },
+  {
+    "id": "dom",
+    "term": "dom",
+    "aliases": ["dominion", "dominion appalacia", "dominion transmission appalachia"],
+    "expansion": "Dominion Appalachia — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PG."
+  },
+  {
+    "id": "permian",
+    "term": "permian",
+    "aliases": ["perm", "permian basis", "el paso", "el paso permian"],
+    "expansion": "El Paso Permian — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PM. West Texas, El Paso Natural Gas."
+  },
+  {
+    "id": "hsc",
+    "term": "hsc",
+    "aliases": ["ship", "houston ship channel", "houston ship swap", "houston ship channel swap", "hpl", "hpl pool"],
+    "expansion": "Houston Ship Channel — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NH. Texas Gulf Coast — Apurva-noted target market."
+  },
+  {
+    "id": "michcon",
+    "term": "michcon",
+    "aliases": ["michigan consolidated"],
+    "expansion": "MichCon (Michigan Consolidated Gas) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NF."
+  },
+  {
+    "id": "ngpl_midcon",
+    "term": "ngpl midcon",
+    "aliases": ["midcon", "ngpl mid continent", "ngpl mid-continent"],
+    "expansion": "NGPL Mid-Continent — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NL."
+  },
+  {
+    "id": "ngpl_texok",
+    "term": "ngpl texok",
+    "aliases": ["texok", "texas/oklahoma", "ngpl texas oklahoma"],
+    "expansion": "NGPL Texas/Oklahoma (Texok) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PD."
+  },
+  {
+    "id": "ngpl_lou",
+    "term": "ngpl lou",
+    "aliases": ["ngpl louisiana", "ngpl"],
+    "expansion": "NGPL Louisiana — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NY."
+  },
+  {
+    "id": "demarc",
+    "term": "demarc",
+    "aliases": ["northern demarc", "northern demarcation", "nngc demarc", "northern natural demarcation"],
+    "expansion": "Northern Natural Demarcation (Demarc) — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PE."
+  },
+  {
+    "id": "citygate",
+    "term": "citygate",
+    "aliases": ["pg&e citygate", "citi", "citigate", "pg & e citygate", "pg&e citygate basis swap"],
+    "expansion": "PG&E Citygate — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PC. California delivery point."
+  },
+  {
+    "id": "panhandle",
+    "term": "panhandle",
+    "aliases": ["pan", "panhandle swing"],
+    "expansion": "Panhandle — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PH."
+  },
+  {
+    "id": "sanjuan",
+    "term": "sanjuan",
+    "aliases": ["san juan", "san juan basin", "sj", "juan"],
+    "expansion": "San Juan Basin — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NJ. Southwest US."
+  },
+  {
+    "id": "socal",
+    "term": "socal",
+    "aliases": ["so. cal", "sc", "qso. cal", "southern california"],
+    "expansion": "SoCal — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NS. Southern California."
+  },
+  {
+    "id": "tetco_s",
+    "term": "tetco s",
+    "aliases": ["south tx", "s. tx", "so tx", "tetco south", "tetco s.", "south texas", "tetco south texas"],
+    "expansion": "Tetco South Texas — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: TX."
+  },
+  {
+    "id": "tetco_e",
+    "term": "tetco e",
+    "aliases": ["eastern louisiana", "tetco east", "tetco e.", "texas eastern", "texas eastern transmission"],
+    "expansion": "Tetco Eastern Louisiana — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: TE."
+  },
+  {
+    "id": "m3",
+    "term": "m-3",
+    "aliases": ["m3", "e tx", "east texas", "east tx", "texas eastern m3", "texas eastern zone m3", "tx e"],
+    "expansion": "Texas Eastern Zone M-3 — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NX."
+  },
+  {
+    "id": "zone6",
+    "term": "zone6",
+    "aliases": ["zone 6", "z6", "tr6", "trz6", "tr z6", "transcontinental zone 6", "transco zone 6"],
+    "expansion": "Transco Zone 6 — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NZ. NY/NJ delivery."
+  },
+  {
+    "id": "zone3",
+    "term": "zone3",
+    "aliases": ["zone 3", "z3", "tr3", "trz3", "tr z3", "transco zone 3", "transcontinental zone 3"],
+    "expansion": "Transco Zone 3 — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: CZ. Southeast US."
+  },
+  {
+    "id": "fgt",
+    "term": "fgt",
+    "aliases": ["fl", "florida gas", "florida", "fl gas", "fl3", "fgt3", "florida zone 3", "fgtz3", "fgt z3"],
+    "expansion": "Florida Gas Transmission Zone 3 — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: FP."
+  },
+  {
+    "id": "tenn500",
+    "term": "tenn 500",
+    "aliases": ["tn 500", "tn500", "tenn500", "t500", "tennessee 500", "tennessee 500 leg"],
+    "expansion": "Tennessee 500 Leg — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NM."
+  },
+  {
+    "id": "zone0",
+    "term": "zone 0",
+    "aliases": ["zone0", "z0", "tr0", "trz0", "tr z0", "transcontinental zone 0", "transco zone 0", "tennessee zone 0"],
+    "expansion": "Tennessee Zone 0 — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NQ."
+  },
+  {
+    "id": "trunkline",
+    "term": "trunkline",
+    "aliases": ["trunk", "trunk la", "trunkline la"],
+    "expansion": "Trunkline LA — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NU."
+  },
+  {
+    "id": "kern_river",
+    "term": "kern river",
+    "aliases": ["kern", "kr", "kern river wyoming"],
+    "expansion": "Kern River, WY — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: NV."
+  },
+  {
+    "id": "ventura",
+    "term": "ventura",
+    "aliases": ["vent", "vtura"],
+    "expansion": "Ventura — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: PF."
+  },
+  {
+    "id": "questar",
+    "term": "questar",
+    "aliases": ["quest"],
+    "expansion": "Questar — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: TA."
+  },
+  {
+    "id": "zone_sl",
+    "term": "zone sl",
+    "aliases": ["zsl", "zonesl", "texas gas zone sl"],
+    "expansion": "Texas Gas Zone SL — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: TB."
+  },
+  {
+    "id": "zone4",
+    "term": "zone 4",
+    "aliases": ["zone4", "z4", "tr4", "trz4", "tr z4", "transco zone 4"],
+    "expansion": "Transco Zone 4 — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: TR."
+  },
+  {
+    "id": "sonat",
+    "term": "sonat",
+    "aliases": [],
+    "expansion": "SONAT — NG basis",
+    "token_class": "product",
+    "notes": "NG basis hub. NYMEX code: SZ. Southern Natural Gas pipeline."
+  },
+
+  {
+    "id": "wti",
+    "term": "wti",
+    "aliases": ["cl", "crude", "crude light", "wti crude", "west texas intermediate", "clearport wti"],
+    "expansion": "WTI Crude Oil",
+    "token_class": "product",
+    "notes": "Crude oil benchmark. NYMEX symbol: CL. Price scale = $/bbl (0.XX premiums, XX or XXX strikes). NG-vs-WTI numeric divergence is the demo's gas-vs-oil 'aha' moment."
+  },
+  {
+    "id": "brent",
+    "term": "brent",
+    "aliases": ["bnt", "brent crude", "ice brent"],
+    "expansion": "Brent Crude Oil",
+    "token_class": "product",
+    "notes": "Crude oil benchmark — ICE-listed (vs WTI on NYMEX). Used in Brent/WTI arb structures."
+  },
+  {
+    "id": "ho",
+    "term": "ho",
+    "aliases": ["heat", "heating oil", "no2 heating oil"],
+    "expansion": "Heating Oil",
+    "token_class": "product",
+    "notes": "NYMEX heating oil. Used in crack-spread structures with crude and NG."
+  },
+  {
+    "id": "rbob",
+    "term": "rbob",
+    "aliases": ["rb", "gasoline", "rbob gasoline"],
+    "expansion": "RBOB Gasoline",
+    "token_class": "product",
+    "notes": "NYMEX RBOB gasoline. Used in crack-spread structures."
+  },
+
+  {
+    "id": "sp15",
+    "term": "sp",
+    "aliases": ["sp15", "sp 15", "south path 15"],
+    "expansion": "SP15 (CAISO South Path 15) — Power",
+    "token_class": "product",
+    "notes": "Power hub — CAISO Southern California load zone. Used in fences, spreads, strangles, etc. — same structures as gas/oil with power-specific decimal scale ($/MWh)."
+  },
+  {
+    "id": "pjm",
+    "term": "pjm",
+    "aliases": ["pjm hub", "pjm west"],
+    "expansion": "PJM (PJM Interconnection) — Power",
+    "token_class": "product",
+    "notes": "Power ISO — Mid-Atlantic. Common power-options counterparty market."
+  },
+  {
+    "id": "nepool",
+    "term": "nepool",
+    "aliases": ["nep", "iso-ne", "iso ne", "ne pool", "new england power pool"],
+    "expansion": "NEPOOL / ISO-NE — Power",
+    "token_class": "product",
+    "notes": "Power ISO — ISO New England (historical NEPOOL name still common in chat)."
+  },
+  {
+    "id": "midco",
+    "term": "midco",
+    "aliases": ["midc", "mid-con", "mid continent", "mid-continent", "miso"],
+    "expansion": "Mid-Continent (MISO) — Power",
+    "token_class": "product",
+    "notes": "Power hub — MISO Mid-Continent."
+  },
+  {
+    "id": "nypool",
+    "term": "nypool",
+    "aliases": ["nyp", "nyiso", "ny pool", "ny iso"],
+    "expansion": "NYPool / NYISO — Power",
+    "token_class": "product",
+    "notes": "Power ISO — New York."
+  },
+  {
+    "id": "palo",
+    "term": "palo",
+    "aliases": ["palo verde", "pv"],
+    "expansion": "Palo Verde (WECC) — Power",
+    "token_class": "product",
+    "notes": "Power hub — Western Interconnect (WECC), non-ISO."
+  },
+  {
+    "id": "cin",
+    "term": "cin",
+    "aliases": ["cinergy", "cin hub"],
+    "expansion": "Cinergy Hub — Power",
+    "token_class": "product",
+    "notes": "Power hub — historical Midwest hub, MISO/PJM-adjacent."
+  },
+
+  {
+    "id": "lga",
+    "term": "lga",
+    "aliases": ["laguardia", "new york laguardia"],
+    "expansion": "LaGuardia (NY) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location (HDD/CDD contracts). NYC area."
+  },
+  {
+    "id": "bos",
+    "term": "bos",
+    "aliases": ["boston"],
+    "expansion": "Boston (BOS) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location. New England."
+  },
+  {
+    "id": "phl",
+    "term": "phl",
+    "aliases": ["philadelphia"],
+    "expansion": "Philadelphia (PHL) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "ord",
+    "term": "ord",
+    "aliases": ["chicago ohare", "ohare", "o'hare"],
+    "expansion": "Chicago O'Hare (ORD) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "cvg",
+    "term": "cvg",
+    "aliases": ["cincinnati"],
+    "expansion": "Cincinnati (CVG) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "mci",
+    "term": "mci",
+    "aliases": ["kansas city"],
+    "expansion": "Kansas City (MCI) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "dsm",
+    "term": "dsm",
+    "aliases": ["des moines"],
+    "expansion": "Des Moines (DSM) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "dfw",
+    "term": "dfw",
+    "aliases": ["dallas", "dallas fort worth"],
+    "expansion": "Dallas-Fort Worth (DFW) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "msp",
+    "term": "msp",
+    "aliases": ["minneapolis", "minneapolis st paul"],
+    "expansion": "Minneapolis (MSP) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "bwi",
+    "term": "bwi",
+    "aliases": ["baltimore", "baltimore washington"],
+    "expansion": "Baltimore (BWI) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+  {
+    "id": "pdx",
+    "term": "pdx",
+    "aliases": ["portland"],
+    "expansion": "Portland (PDX) — Weather station",
+    "token_class": "product",
+    "notes": "Weather option location."
+  },
+
+  {
+    "id": "f",
+    "term": "f",
+    "aliases": ["january", "jan"],
+    "expansion": "January",
+    "token_class": "tenor",
+    "notes": "CME month code F = January. Year-suffix convention: F6=Jan 2026, F7=Jan 2027; alternate forms F26, F'07, F08, Jan27."
+  },
+  {
+    "id": "g",
+    "term": "g",
+    "aliases": ["february", "feb"],
+    "expansion": "February",
+    "token_class": "tenor",
+    "notes": "CME month code G = February. Year forms: G7=Feb 2027, G26, Feb27."
+  },
+  {
+    "id": "h",
+    "term": "h",
+    "aliases": ["march", "mar"],
+    "expansion": "March",
+    "token_class": "tenor",
+    "notes": "CME month code H = March."
+  },
+  {
+    "id": "j",
+    "term": "j",
+    "aliases": ["april", "apr"],
+    "expansion": "April",
+    "token_class": "tenor",
+    "notes": "CME month code J = April."
+  },
+  {
+    "id": "k",
+    "term": "k",
+    "aliases": ["may"],
+    "expansion": "May",
+    "token_class": "tenor",
+    "notes": "CME month code K = May."
+  },
+  {
+    "id": "m",
+    "term": "m",
+    "aliases": ["june", "jun"],
+    "expansion": "June",
+    "token_class": "tenor",
+    "notes": "CME month code M = June."
+  },
+  {
+    "id": "n",
+    "term": "n",
+    "aliases": ["july", "jul"],
+    "expansion": "July",
+    "token_class": "tenor",
+    "notes": "CME month code N = July."
+  },
+  {
+    "id": "q",
+    "term": "q",
+    "aliases": ["august", "aug"],
+    "expansion": "August",
+    "token_class": "tenor",
+    "notes": "CME month code Q = August. NB: bare 'Q' = August month; 'Q'+digit (Q1..Q4) = quarter strip — 2C disambiguates."
+  },
+  {
+    "id": "u",
+    "term": "u",
+    "aliases": ["september", "sep", "sept"],
+    "expansion": "September",
+    "token_class": "tenor",
+    "notes": "CME month code U = September."
+  },
+  {
+    "id": "v",
+    "term": "v",
+    "aliases": ["october", "oct"],
+    "expansion": "October",
+    "token_class": "tenor",
+    "notes": "CME month code V = October."
+  },
+  {
+    "id": "x",
+    "term": "x",
+    "aliases": ["november", "nov"],
+    "expansion": "November",
+    "token_class": "tenor",
+    "notes": "CME month code X = November. NB: 'x' is multiplexed across grammar positions — month code, underlying reference ('x 9.485'=at 9.485), ratio multiplier ('1x2'), trade event ('X10'/'10X'=crossed at 10), multi-month strip ('X-H'=Nov–Mar). 2C grammar disambiguates by position."
+  },
+  {
+    "id": "z",
+    "term": "z",
+    "aliases": ["december", "dec"],
+    "expansion": "December",
+    "token_class": "tenor",
+    "notes": "CME month code Z = December."
+  },
+  {
+    "id": "cal",
+    "term": "cal",
+    "aliases": ["calendar", "calendar year", "yr", "fullcal"],
+    "expansion": "calendar-year strip",
+    "token_class": "tenor",
+    "notes": "Average price across the calendar year. Year-coded forms: Cal26, Cal27, Cal2027, Cal 07, Cal10, Yr27, FullCal27. NB: shares term with cal_spread (strategy) — 2C disambiguates by context."
+  },
+  {
+    "id": "jv",
+    "term": "jv",
+    "aliases": [],
+    "expansion": "Apr/Oct",
+    "token_class": "tenor",
+    "notes": "Concatenated month codes J=Apr, V=Oct (a strip). Multi-letter concatenation pattern: 'ZFG'=Dec/Jan/Feb, 'XH'=Nov–Mar, 'KV'=May–Oct."
+  },
+  {
+    "id": "win",
+    "term": "win",
+    "aliases": ["winter", "winter strip", "win strip"],
+    "expansion": "Winter strip (Oct–Mar)",
+    "token_class": "tenor",
+    "notes": "IFEU §3.5: average price across Oct–Mar. Year form: Wn26=Winter 2026–27."
+  },
+  {
+    "id": "sum",
+    "term": "sum",
+    "aliases": ["summer", "summer strip", "sum strip"],
+    "expansion": "Summer strip (Apr–Sep)",
+    "token_class": "tenor",
+    "notes": "IFEU §3.5: average price across Apr–Sep."
+  },
+  {
+    "id": "q1",
+    "term": "q1",
+    "aliases": ["first quarter", "q one"],
+    "expansion": "Q1 strip (Jan–Mar)",
+    "token_class": "tenor",
+    "notes": "IFEU §3.4 quarter strip."
+  },
+  {
+    "id": "q2",
+    "term": "q2",
+    "aliases": ["second quarter", "q two"],
+    "expansion": "Q2 strip (Apr–Jun)",
+    "token_class": "tenor",
+    "notes": "IFEU §3.4 quarter strip."
+  },
+  {
+    "id": "q3",
+    "term": "q3",
+    "aliases": ["third quarter", "q three"],
+    "expansion": "Q3 strip (Jul–Sep)",
+    "token_class": "tenor",
+    "notes": "IFEU §3.4 quarter strip."
+  },
+  {
+    "id": "q4",
+    "term": "q4",
+    "aliases": ["fourth quarter", "q four"],
+    "expansion": "Q4 strip (Oct–Dec)",
+    "token_class": "tenor",
+    "notes": "IFEU §3.4 quarter strip."
+  },
+  {
+    "id": "balmo",
+    "term": "balmo",
+    "aliases": ["bal mo", "balance of month", "rest of month"],
+    "expansion": "balance-of-month strip",
+    "token_class": "tenor",
+    "notes": "IFEU §4.2: daily contracts from a chosen start date to month-end."
+  },
+  {
+    "id": "first_half",
+    "term": "1st half",
+    "aliases": ["first half", "h1", "1h"],
+    "expansion": "1st half (Jan–Jun)",
+    "token_class": "tenor",
+    "notes": "YJ semi-annual strip. Year-suffix form: '1st half 08' = Jan–Jun 2008."
+  },
+  {
+    "id": "second_half",
+    "term": "2nd half",
+    "aliases": ["second half", "h2", "2h"],
+    "expansion": "2nd half (Jul–Dec)",
+    "token_class": "tenor",
+    "notes": "YJ semi-annual strip. Year-suffix form: '2nd half 08' = Jul–Dec 2008."
+  },
+  {
+    "id": "red",
+    "term": "red",
+    "aliases": [],
+    "expansion": "Red year (Year 1 ahead)",
+    "token_class": "tenor",
+    "notes": "Futures-color year code — Year 1 ahead. Used as prefix: 'Red x 800 call'. Eurodollar-style convention universal in energy strips."
+  },
+  {
+    "id": "blue",
+    "term": "blue",
+    "aliases": [],
+    "expansion": "Blue year (Year 2 ahead)",
+    "token_class": "tenor",
+    "notes": "Futures-color year code — Year 2 ahead. 'blue z 80/90 call spread'."
+  },
+  {
+    "id": "green",
+    "term": "green",
+    "aliases": [],
+    "expansion": "Green year (Year 3 ahead)",
+    "token_class": "tenor",
+    "notes": "Futures-color year code — Year 3 ahead. 'green xh 800 call'."
+  },
+
+  {
+    "id": "cs",
+    "term": "cs",
+    "aliases": ["call spread", "c s", "calls spread", "vcs", "vertical call spread", "csprd", "cspd", "cspread", "callspread", "call spr", "call spd"],
+    "expansion": "call spread",
+    "token_class": "strategy",
+    "notes": "Call spread (IFEU §1.1): buy call A, sell higher-strike call B; same expiry. YJ-confirmed variants: csprd, cspd, cspread, callspread, call spr, call spd."
+  },
+  {
+    "id": "ps",
+    "term": "ps",
+    "aliases": ["put spread", "p s", "vps", "vertical put spread", "psprd", "pspd", "pspread", "putspread", "put spr", "put spd"],
+    "expansion": "put spread",
+    "token_class": "strategy",
+    "notes": "Put spread (IFEU §1.2): buy put B, sell lower-strike put A."
+  },
+  {
+    "id": "c",
+    "term": "c",
+    "aliases": ["call", "calls"],
+    "expansion": "call",
+    "token_class": "strategy",
+    "notes": "Outright call. NB: spelling-error variants 'cal'/'cll' NOT seeded due to collision with cal (tenor); 2C fuzzy-matching handles."
+  },
+  {
+    "id": "p",
+    "term": "p",
+    "aliases": ["put", "puts", "putt", "putts", "pt"],
+    "expansion": "put",
+    "token_class": "strategy",
+    "notes": "Outright put. YJ-documented spelling-error variants: putt, putts, pt."
+  },
+  {
+    "id": "pfly",
+    "term": "pfly",
+    "aliases": ["put fly", "put butterfly", "fly", "p fly", "putfly"],
+    "expansion": "put butterfly",
+    "token_class": "strategy",
+    "notes": "Put butterfly (IFEU §1.8): buy put A, sell two puts at higher B, buy put at even higher C. Equal gaps required."
+  },
+  {
+    "id": "cfly",
+    "term": "cfly",
+    "aliases": ["call fly", "call butterfly", "fly", "c fly", "callfly"],
+    "expansion": "call butterfly",
+    "token_class": "strategy",
+    "notes": "Call butterfly (IFEU §1.8): by symmetry with put fly."
+  },
+  {
+    "id": "call_tree",
+    "term": "call tree",
+    "aliases": ["c tree", "ladder", "call ladder", "split-ratio"],
+    "expansion": "call ladder (tree)",
+    "token_class": "strategy",
+    "notes": "ICE 'Ladder (Tree)' (IFEU §1.18): unequal gaps OK. Also called 'split-ratio'."
+  },
+  {
+    "id": "fence",
+    "term": "fence",
+    "aliases": ["collar", "combo", "fnc", "fnce", "fenc"],
+    "expansion": "collar (fence)",
+    "token_class": "strategy",
+    "notes": "ICE 'Collar (Fence)' (IFEU §1.9): hedge vs underlying."
+  },
+  {
+    "id": "strangle",
+    "term": "strangle",
+    "aliases": ["strang", "stgl", "stngl", "stg", "strangl"],
+    "expansion": "strangle",
+    "token_class": "strategy",
+    "notes": "Strangle (IFEU §1.4): buy put B, buy higher-strike call A."
+  },
+  {
+    "id": "straddle",
+    "term": "straddle",
+    "aliases": ["strad", "stdl", "str", "std", "strd", "strdl", "stradle", "c/p", "cp", "p/c", "pc"],
+    "expansion": "straddle",
+    "token_class": "strategy",
+    "notes": "Straddle (IFEU §1.6): buy call+put same strike. YJ variants: str, std, strd, strdl, strad, stradle. Combined c/p, cp, p/c, pc = straddle."
+  },
+  {
+    "id": "ifly",
+    "term": "ifly",
+    "aliases": ["iron fly", "iron butterfly", "wings", "packaged straddle", "flat-top"],
+    "expansion": "iron butterfly",
+    "token_class": "strategy",
+    "notes": "Iron butterfly (IFEU §1.13)."
+  },
+  {
+    "id": "icondor",
+    "term": "icondor",
+    "aliases": ["iron condor", "ic"],
+    "expansion": "iron condor",
+    "token_class": "strategy",
+    "notes": "Iron condor (IFEU §1.15)."
+  },
+  {
+    "id": "run",
+    "term": "run",
+    "aliases": ["strip straddles", "serial straddles", "straddle run"],
+    "expansion": "multi-month strategy chain (typically consecutive ATM straddles)",
+    "token_class": "strategy",
+    "notes": "YJ Trader Lingo: 'first six to nine months of straddles with bid and offers; uses close to the strike prices.'"
+  },
+  {
+    "id": "guts",
+    "term": "guts",
+    "aliases": ["gut strangle", "long guts", "short guts"],
+    "expansion": "gut strangle",
+    "token_class": "strategy",
+    "notes": "Gut strangle (IFEU §1.5): ITM call + ITM put."
+  },
+  {
+    "id": "stdl_spr",
+    "term": "stdl spr",
+    "aliases": ["std_sprd", "straddle spread", "strad spread", "strad spd", "stdl spd"],
+    "expansion": "straddle spread (calendar)",
+    "token_class": "strategy",
+    "notes": "Straddle Spread (IFEU §1.7): sell near-month straddle, buy far-month straddle."
+  },
+  {
+    "id": "condor",
+    "term": "condor",
+    "aliases": ["call condor", "put condor"],
+    "expansion": "condor",
+    "token_class": "strategy",
+    "notes": "Condor (IFEU §1.14): 4-strike, non-equal-gaps allowed."
+  },
+  {
+    "id": "conversion",
+    "term": "conversion",
+    "aliases": ["reversal", "conversion to put", "conversion to call"],
+    "expansion": "reversal/conversion (delta-100 arbitrage)",
+    "token_class": "strategy",
+    "notes": "Reversal/Conversion (IFEU §1.10)."
+  },
+  {
+    "id": "synthetic",
+    "term": "synthetic",
+    "aliases": ["synth"],
+    "expansion": "synthetic (long futures replicant)",
+    "token_class": "strategy",
+    "notes": "Synthetic (IFEU §1.11): buy call + sell put at same strike."
+  },
+  {
+    "id": "box",
+    "term": "box",
+    "aliases": [],
+    "expansion": "box (synthetic value lock)",
+    "token_class": "strategy",
+    "notes": "Box (IFEU §1.12)."
+  },
+  {
+    "id": "diagonal",
+    "term": "diagonal",
+    "aliases": ["diag", "diag cs", "diag ps", "diagonal call spread", "diagonal put spread"],
+    "expansion": "diagonal spread",
+    "token_class": "strategy",
+    "notes": "Diagonal Call/Put Spread (IFEU §1.16–1.17)."
+  },
+  {
+    "id": "jelly_roll",
+    "term": "jelly roll",
+    "aliases": ["roll"],
+    "expansion": "jelly roll",
+    "token_class": "strategy",
+    "notes": "Jelly Roll (IFEU §1.19)."
+  },
+  {
+    "id": "cal_spread",
+    "term": "cal",
+    "aliases": ["calendar spread", "cal spread", "call cal", "put cal"],
+    "expansion": "calendar spread",
+    "token_class": "strategy",
+    "notes": "Calendar Spread (IFEU §1.3): 'N/Q 325 cal'. Shares term 'cal' with cal (tenor); 2C disambiguates by context."
+  },
+  {
+    "id": "swap",
+    "term": "swap",
+    "aliases": [],
+    "expansion": "swap",
+    "token_class": "strategy",
+    "notes": "Fixed-for-floating swap. YJ patterns: 'x 1.575/1.58', 'x swap 1.575/1.58', 'x vs z swap'. Basis swaps: 'aeco/tco x swap spread', '{hub} H swap 1.575/1.58'."
+  },
+  {
+    "id": "swap_spread",
+    "term": "swap spread",
+    "aliases": ["swap spd", "swap sprd"],
+    "expansion": "swap spread",
+    "token_class": "strategy",
+    "notes": "Inter-month or inter-hub swap spread. e.g. 'X vs Z swap spread', 'aeco/tco x swap spread'."
+  },
+  {
+    "id": "lal",
+    "term": "lal",
+    "aliases": ["lookalike", "look alike", "look-alike", "clearport"],
+    "expansion": "Look-Alike option (LAL / ClearPort)",
+    "token_class": "strategy",
+    "notes": "Crude-specific option type: an OTC-cleared look-alike of the listed contract. Often via ClearPort. e.g. 'LAL x 5950/h 6050 straddle spread', 'lal cal 08 70.00/80.00 csprd vs 66.50'."
+  },
+  {
+    "id": "apo",
+    "term": "apo",
+    "aliases": ["asian put option", "asian option"],
+    "expansion": "Asian-style option (APO)",
+    "token_class": "strategy",
+    "notes": "Asian-style averaged option. Crude-specific. e.g. 'APO Cal 8 60/74 fence 6700x 10/19', 'APO Z 60 c 380/385'."
+  },
+  {
+    "id": "cso",
+    "term": "cso",
+    "aliases": ["calendar spread option"],
+    "expansion": "Calendar Spread Option (CSO)",
+    "token_class": "strategy",
+    "notes": "Option on the calendar spread between two contract months. Crude-specific. e.g. 'cso k/m +100c 5/7', 'cso z7/z8 +100c 133/135'. The +/- sign in front of the strike indicates direction."
+  },
+
+  {
+    "id": "bid",
+    "term": "bid",
+    "aliases": ["bidding", "paying"],
+    "expansion": "bid",
+    "token_class": "side",
+    "notes": null
+  },
+  {
+    "id": "offer",
+    "term": "offer",
+    "aliases": ["offered", "offering"],
+    "expansion": "offer",
+    "token_class": "side",
+    "notes": null
+  },
+  {
+    "id": "by",
+    "term": "by",
+    "aliases": [],
+    "expansion": "bid-by-offer",
+    "token_class": "side",
+    "notes": "two-sided market separator, e.g. '61 by 64' = .061 bid / .064 offer"
+  },
+  {
+    "id": "trades",
+    "term": "trades",
+    "aliases": ["trade", "traded", "done", "trds", "trad", "trd"],
+    "expansion": "trade printed",
+    "token_class": "side",
+    "notes": "A trade printed at this level. YJ-confirmed shorthand: trds, trad, trd."
+  },
+  {
+    "id": "out",
+    "term": "out",
+    "aliases": ["offer out", "bid out", "b out"],
+    "expansion": "quote withdrawn",
+    "token_class": "side",
+    "notes": "e.g. 'offer out' / 'b out'"
+  },
+  {
+    "id": "looking_for",
+    "term": "looking for",
+    "aliases": ["looking to buy", "wanting", "want to buy", "i'll bid"],
+    "expansion": "buy interest (motivated buyer, negotiating)",
+    "token_class": "side",
+    "notes": "Motivated buyer; not firm."
+  },
+  {
+    "id": "looking_to_sell",
+    "term": "looking to sell",
+    "aliases": ["want to sell", "i'll offer"],
+    "expansion": "sell interest (motivated seller, negotiating)",
+    "token_class": "side",
+    "notes": "Motivated seller; not firm."
+  },
+  {
+    "id": "look",
+    "term": "look",
+    "aliases": ["looking", "give me a look", "ioi", "indication", "indication of interest"],
+    "expansion": "IOI — non-binding quote request",
+    "token_class": "side",
+    "notes": "Indication of Interest."
+  },
+  {
+    "id": "lift",
+    "term": "lift",
+    "aliases": ["lifting", "mine", "take", "taking", "take it", "i'll pay", "+100"],
+    "expansion": "buy at the offer (execute)",
+    "token_class": "side",
+    "notes": "Execution slang: buyer hits the ask."
+  },
+  {
+    "id": "hit",
+    "term": "hit",
+    "aliases": ["hitting", "yours", "sling", "slinging", "give", "giving"],
+    "expansion": "sell at the bid (execute)",
+    "token_class": "side",
+    "notes": "Execution slang: seller hits the bid."
+  },
+  {
+    "id": "live",
+    "term": "live",
+    "aliases": [],
+    "expansion": "live (open quote, firm)",
+    "token_class": "side",
+    "notes": "YJ event marker: quote is open and firm. Distinct from 'looking' (non-binding) and 'crossing' (trade event)."
+  },
+  {
+    "id": "crossing",
+    "term": "crossing",
+    "aliases": ["cross", "x-ing", "xing", "crossing 10s", "crosses"],
+    "expansion": "crossed at price (trade event)",
+    "token_class": "side",
+    "notes": "YJ trade-event marker. Also compact: 'X10' / '10X'."
+  },
+  {
+    "id": "vs",
+    "term": "vs",
+    "aliases": ["versus", "vs."],
+    "expansion": "versus / at (underlying reference)",
+    "token_class": "side",
+    "notes": "YJ underlying-reference marker — synonym for 'x' in reference position. e.g. 'X 14.50 call vs Z 15.00 call'."
+  },
+
+  {
+    "id": "delta",
+    "term": "delta",
+    "aliases": ["d", "delt", "delta tag"],
+    "expansion": "delta",
+    "token_class": "qualifier",
+    "notes": "Spoken Greek tag. FlowTrade renders; does not compute. NB: 'Nd' suffix is context-ambiguous (N-delta vs N-days-on-order) — 2C disambiguates."
+  },
+  {
+    "id": "gamma",
+    "term": "gamma",
+    "aliases": ["ga", "g"],
+    "expansion": "gamma",
+    "token_class": "qualifier",
+    "notes": "Spoken Greek tag."
+  },
+  {
+    "id": "theta",
+    "term": "theta",
+    "aliases": ["th"],
+    "expansion": "theta",
+    "token_class": "qualifier",
+    "notes": "Spoken Greek tag — daily time decay."
+  },
+  {
+    "id": "vega",
+    "term": "vega",
+    "aliases": [],
+    "expansion": "vega",
+    "token_class": "qualifier",
+    "notes": "Spoken Greek tag. No short alias — 'v' collides with October month code."
+  },
+  {
+    "id": "cr",
+    "term": "cr",
+    "aliases": ["credit"],
+    "expansion": "credit (negative premium)",
+    "token_class": "qualifier",
+    "notes": "Credit notation for short structures. e.g. '12cr/10cr' = 0.12 credit / 0.10 credit."
+  },
+  {
+    "id": "cxls",
+    "term": "cxls",
+    "aliases": ["cancel", "cancels", "cancelled", "canceled", "cxld", "cxl", "c", "pull", "pulling"],
+    "expansion": "cancel (order withdrawn)",
+    "token_class": "qualifier",
+    "notes": "Order management."
+  },
+  {
+    "id": "hdd",
+    "term": "hdd",
+    "aliases": ["heating degree day", "heating degree days"],
+    "expansion": "Heating Degree Days",
+    "token_class": "qualifier",
+    "notes": "Weather contract type — winter season. Strike is in degree-day units. e.g. 'LGA HDD Mar 670 Straddle' = LaGuardia March HDD straddle struck at 670 degree-days. Apurva-noted target market."
+  },
+  {
+    "id": "cdd",
+    "term": "cdd",
+    "aliases": ["cooling degree day", "cooling degree days"],
+    "expansion": "Cooling Degree Days",
+    "token_class": "qualifier",
+    "notes": "Weather contract type — summer season. e.g. 'PDX CDD May-Sep 525 Call' = Portland CDD strip May-Sep at 525."
+  }
+]

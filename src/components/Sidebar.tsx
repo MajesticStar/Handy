@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Cog, FlaskConical, History, Info, Sparkles, Cpu } from "lucide-react";
+import { BookOpen, Cog, FlaskConical, History, Info, Sparkles, Cpu } from "lucide-react";
 import HandyTextLogo from "./icons/HandyTextLogo";
 import HandyHand from "./icons/HandyHand";
 import { useSettings } from "../hooks/useSettings";
@@ -12,6 +12,7 @@ import {
   AboutSettings,
   PostProcessingSettings,
   ModelsSettings,
+  VocabularySettings,
 } from "./settings";
 
 export type SidebarSection = keyof typeof SECTIONS_CONFIG;
@@ -43,6 +44,12 @@ export const SECTIONS_CONFIG = {
     icon: Cpu,
     component: ModelsSettings,
     enabled: () => true,
+  },
+  vocabulary: {
+    labelKey: "sidebar.vocabulary",
+    icon: BookOpen,
+    component: VocabularySettings,
+    enabled: (settings) => settings?.debug_mode ?? false,
   },
   advanced: {
     labelKey: "sidebar.advanced",
