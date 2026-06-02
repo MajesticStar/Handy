@@ -1102,5 +1102,29 @@
     "expansion": "Cooling Degree Days",
     "token_class": "qualifier",
     "notes": "Weather contract type — summer season. e.g. 'PDX CDD May-Sep 525 Call' = Portland CDD strip May-Sep at 525."
+  },
+  {
+    "id": "nymex",
+    "term": "nymex",
+    "aliases": ["cme"],
+    "expansion": "NYMEX (CME)",
+    "token_class": "venue",
+    "notes": "Venue routing tag. Only 'NYMEX' or 'CME' used (per Apurva). Physical Henry Hub futures = symbol NG, 10,000 MMBtu/month, physical delivery, price-discovered (the NA benchmark). Financially-settled NG symbols = NN / HH / HP (bucket as 'NYMEX financial'). 'HH' collides with Henry Hub product — disambiguate by position."
+  },
+  {
+    "id": "ice",
+    "term": "ice",
+    "aliases": ["intercontinental", "intercontinental exchange"],
+    "expansion": "ICE (IntercontinentalExchange)",
+    "token_class": "venue",
+    "notes": "Venue routing tag. Cash-settled financial side: fixed-price futures (regional look-alike, dozens of hubs, index-referenced), basis futures (differential vs HH), swing futures (daily vs Gas Daily), spreads. Lot = 2,500 MMBtu = ¼ NYMEX (ICE term 'quarter day', rarely spoken). Phys-vs-financial kept quiet in output."
+  },
+  {
+    "id": "nodal",
+    "term": "nodal",
+    "aliases": ["nodal exchange"],
+    "expansion": "Nodal Exchange",
+    "token_class": "venue",
+    "notes": "Venue routing tag. Power-leaning exchange. Recognized per Apurva 2026-06-01; not a demo-verified standalone market."
   }
 ]
