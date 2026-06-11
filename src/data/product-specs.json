@@ -53,7 +53,7 @@
       "exchanges": ["CME (NYMEX) — CL", "ICE — Brent, Midland WTI HOU"],
       "settlement": "Physical (CME CL) or cash (ICE Midland WTI HOU varies)",
       "notes": "Critical NG-vs-WTI divergence: same spoken digits 'sixty-one' = 0.061 in NG premium position vs 0.61 in WTI premium position. 10× scale difference — the demo's gas-vs-oil 'aha' moment lives here. Brent/WTI arb sign convention: WTI - Brent (per IFEU §2.4).",
-      "strike_notation": "ICE-Chat/YJ shorthand often drops the strike decimal: '6250' = $62.50, '7000' = $70.00 — grammar inserts it by scale. (Possibly dated vs today's ICE Chat — eyeball.)"
+      "strike_notation": "WTI strikes/prices CARRY the decimal in ICE Chat's recognized form: '62.50', '70.00', '57.33' — NOT the old YellowJacket no-decimal '6250'. The decimal is REQUIRED for ICE Chat to recognize the market (turn it blue/underlined). Confirmed by Apurva 2026-06-03 + ICE-support strings (e.g. 'WTI Sep25 57.33 / 57.35', 'WTI M25 54.50 Call')."
     },
     "refined": {
       "name": "Refined Products (Heating Oil, RBOB Gasoline)",

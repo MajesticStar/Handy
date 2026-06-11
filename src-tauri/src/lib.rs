@@ -11,6 +11,7 @@ mod input;
 mod llm_client;
 mod managers;
 mod overlay;
+mod panel;
 pub mod portable;
 mod settings;
 mod shortcut;
@@ -292,6 +293,9 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Create the recording overlay window (hidden by default)
     utils::create_recording_overlay(app_handle);
+
+    // Create the FlowTrade translator panel (hidden by default)
+    panel::create_translator_panel(app_handle);
 }
 
 #[tauri::command]
@@ -310,6 +314,20 @@ fn trigger_update_check(app: AppHandle) -> Result<(), String> {
 #[specta::specta]
 fn show_main_window_command(app: AppHandle) -> Result<(), String> {
     show_main_window(&app);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+fn show_translator_panel(app: AppHandle) -> Result<(), String> {
+    panel::show_translator_panel(&app);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+fn hide_translator_panel(app: AppHandle) -> Result<(), String> {
+    panel::hide_translator_panel(&app);
     Ok(())
 }
 
@@ -376,6 +394,8 @@ pub fn run(cli_args: CliArgs) {
             shortcut::handy_keys::stop_handy_keys_recording,
             trigger_update_check,
             show_main_window_command,
+            show_translator_panel,
+            hide_translator_panel,
             commands::cancel_operation,
             commands::is_portable,
             commands::get_app_dir_path,

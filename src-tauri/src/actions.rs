@@ -606,6 +606,10 @@ impl ShortcutAction for TranscribeAction {
                                 let ah_clone = ah.clone();
                                 let paste_time = Instant::now();
                                 let final_text = processed.final_text;
+                                // FlowTrade: announce the final text to the
+                                // translator panel. Observational only — the
+                                // paste below is unchanged.
+                                let _ = ah.emit("flowtrade-transcription", &final_text);
                                 ah.run_on_main_thread(move || {
                                     match utils::paste(final_text, ah_clone.clone()) {
                                         Ok(()) => debug!(
