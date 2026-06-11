@@ -12,6 +12,13 @@
 // Locked design rule (see product-specs.json): never trust the speech-to-text
 // decimals — re-derive them by position + asset class. The numeric scales live
 // in product-specs.json; product -> asset_class lookup lives there too.
+//
+// Re-grounded 2026-06-11 to live-validated ICE Chat formats (vault docs:
+// ice-chat-recognition-validation.md, market-string-reference-ng-wti.md):
+// the pasted string carries no venue tag and no "basis"/"spread" keyword
+// (those stay spoken cues only); WTI keeps the product token, requires a
+// 2-digit year, and strikes CARRY decimals (62.50, not 6250); trailing
+// "out" is excluded; trade prints ("trades") stay in the string.
 
 import lexiconSeed from "../../data/lexicon-seed.json";
 import productSpecs from "../../data/product-specs.json";
@@ -103,6 +110,7 @@ function buildMap(cls: string): Map<string, LexEntry> {
 const PRODUCTS = buildMap("product");
 const STRATEGIES = buildMap("strategy");
 const VENUES = buildMap("venue");
+const SIDES = buildMap("side");
 
 const P2A = (productSpecs as any).product_to_asset_class as Record<
   string,
@@ -130,12 +138,16 @@ function num(atom: string) {
   return { sign, hasDot: body.includes("."), body, raw: c };
 }
 
-// Place a strike decimal by asset class. NG strikes are dollars.cents (X.YZ);
-// oil strikes are written no-decimal in chat (6250 = 62.50).
+// Place a strike decimal by asset class. NG strikes are dollars.cents (X.YZ).
+// Oil strikes CARRY the decimal in chat (62.50); a bare 1-2 digit token is
+// whole dollars (60 -> 60.00) and a 3-4 digit run is spoken cents (6250 -> 62.50).
 function strikeValue(atom: string, assetClass: string): number {
   const { sign, hasDot, body } = num(atom);
   if (hasDot) return sign * parseFloat(body);
-  if (assetClass === "oil") return (sign * parseInt(body, 10)) / 100; // 6250 -> 62.50
+  if (assetClass === "oil")
+    return body.length >= 3
+      ? (sign * parseInt(body, 10)) / 100 // 6250 -> 62.50
+      : sign * parseInt(body, 10); // 60 -> 60.00
   // ng-style: decimal after the first digit (325 -> 3.25, 35 -> 3.5, 4 -> 4)
   if (body.length <= 1) return sign * parseInt(body, 10);
   return sign * parseFloat(body[0] + "." + body.slice(1));
@@ -184,6 +196,11 @@ function cents(v: number): string {
 function rawPremiumNG(v: number): string {
   return `${fmtSign(v)}${Math.abs(v).toFixed(3).replace(/^0/, "")}`;
 }
+// Raw rendering of a basis/spread differential: ASCII sign + leading zero
+// (-0.045), the validated ICE Chat form.
+function rawDiff(v: number): string {
+  return `${v < 0 ? "-" : ""}${Math.abs(v)}`;
+}
 function shortName(productId: string): string {
   if (SHORT_NAME[productId]) return SHORT_NAME[productId];
   const e = LEX.find((x) => x.id === productId);
@@ -210,6 +227,9 @@ export function recognize(input: string): RecognizedQuote | null {
   const tokens = input.trim().toLowerCase().split(/\s+/);
 
   let monthKey: string | null = null;
+  let year: string | null = null; // 2-digit contract year (crude requires it)
+  let side: string | null = null; // bid | offer (single-sided quote)
+  let status: string | null = null; // trades = a print, not a quote
   let strategy: LexEntry | null = null;
   let venue: LexEntry | null = null;
   let venueOnly = false;
@@ -247,6 +267,25 @@ export function recognize(input: string): RecognizedQuote | null {
       monthKey = MONTH_NAMES[t];
       continue;
     }
+    // month glued to a 2-digit year: z25 / dec25 / sep25 (crude tenor)
+    if (monthKey === null) {
+      const my = t.match(/^([a-z]+)(\d{2})$/);
+      if (my && (MONTHS[my[1]] || MONTH_NAMES[my[1]])) {
+        monthKey = MONTHS[my[1]] ? my[1] : MONTH_NAMES[my[1]];
+        year = my[2];
+        continue;
+      }
+    }
+    // bare 2-digit year after the month ("december 25") — crude only
+    if (
+      monthKey !== null &&
+      year === null &&
+      /^\d{2}$/.test(t) &&
+      productIds.some((p) => P2A[p] === "oil")
+    ) {
+      year = t;
+      continue;
+    }
 
     // venue
     if (VENUES.has(t)) {
@@ -257,6 +296,15 @@ export function recognize(input: string): RecognizedQuote | null {
     // strategy
     if (STRATEGIES.has(t)) {
       strategy = STRATEGIES.get(t)!;
+      continue;
+    }
+
+    // side / status words (bid, offer, trades + aliases); other side-class
+    // tokens are consumed but unused in the prototype
+    if (SIDES.has(t)) {
+      const e = SIDES.get(t)!;
+      if (e.id === "trades") status = "trades";
+      else if (e.id === "bid" || e.id === "offer") side = e.id;
       continue;
     }
 
@@ -279,6 +327,16 @@ export function recognize(input: string): RecognizedQuote | null {
     if (PRODUCTS.has(t)) {
       productIds.push(PRODUCTS.get(t)!.id);
       continue;
+    }
+
+    // number(s) glued to a structure: 3c, 2.25/2.75ps (per the real sample)
+    if (strategy === null) {
+      const g = t.match(/^([0-9][0-9./]*)([a-z]+)$/);
+      if (g && STRATEGIES.has(g[2])) {
+        strategy = STRATEGIES.get(g[2])!;
+        numberGroups.push({ atoms: splitGroup(g[1]), afterRef: seenRef });
+        continue;
+      }
     }
 
     // numbers
@@ -307,6 +365,8 @@ export function recognize(input: string): RecognizedQuote | null {
 
   const month = monthKey ? MONTHS[monthKey] : null;
   if (!month) return null; // every demo cell carries a month
+  const tenor = month.code + (year ?? ""); // K (NG) / Z25 (crude)
+  const monthEx = month.name + (year ? " 20" + year : "");
 
   // ----- slot the numbers and render -----
   if (shape === "options") {
@@ -321,48 +381,65 @@ export function recognize(input: string): RecognizedQuote | null {
     const premWasDerived = premGroup
       ? premGroup.atoms.some((a) => !num(a).hasDot)
       : false;
-    // Flag strikes amber only when genuinely re-derived: oil (no-decimal
-    // convention) or a multi-digit bare integer (a dropped decimal, e.g. 325).
-    // A clean single-digit strike like "4" -> $4.00 is unambiguous.
-    const strikesDerived =
-      assetClass === "oil" ||
-      strikeGroup.atoms.some((a) => {
-        const n = num(a);
-        return !n.hasDot && n.body.length >= 3;
-      });
+    // Flag strikes amber only when a decimal was genuinely re-derived: any
+    // bare oil strike (60 -> 60.00, 6250 -> 62.50) or a multi-digit bare NG
+    // integer (325 -> 3.25). A transcription that carried the decimal is
+    // trusted as-is.
+    const strikesDerived = strikeGroup.atoms.some((a) => {
+      const n = num(a);
+      return !n.hasDot && (assetClass === "oil" || n.body.length >= 3);
+    });
 
     const isOil = assetClass === "oil";
-    const strikeDec = 2;
-    const rawStrikes = strikeGroup.atoms.join("/"); // keep chat-native form
-    const rawPrem = prems.length
-      ? prems.map((p) => (isOil ? p.toFixed(2) : rawPremiumNG(p))).join("/")
+    // Oil strikes must carry decimals in the pasted string (62.50, never
+    // 6250); NG keeps the chat-native atoms as spoken.
+    const rawStrikes = isOil
+      ? strikes.map((s) => s.toFixed(2)).join("/")
+      : strikeGroup.atoms.join("/");
+    // Single-letter structures glue to the strike (J 3c); multi-letter are
+    // spaced (3.25/4 cs) — matching the validated sample forms exactly.
+    const strikeStrat =
+      strategy!.id.length === 1
+        ? `${rawStrikes}${strategy!.id}`
+        : `${rawStrikes} ${strategy!.id}`;
+    // A premium atom that carried its decimal is echoed (leading-dot form);
+    // a bare one is re-derived per asset class.
+    const rawPremAtom = (a: string, v: number) => {
+      const n = num(a);
+      if (n.hasDot) return n.raw.replace(/^(-?)0\./, "$1.");
+      return isOil ? v.toFixed(2) : rawPremiumNG(v);
+    };
+    const rawPrem = premGroup
+      ? premGroup.atoms.map((a, i) => rawPremAtom(a, prems[i])).join("/")
       : "";
-    const venueTag = venue
-      ? ` ${venue.expansion.split(" ")[0]}${venueOnly ? " only" : ""}`
-      : "";
-    const raw =
-      [
-        month.code,
-        rawStrikes,
-        strategy!.id,
-        refRaw ? `x${refRaw}` : "",
-        rawPrem,
-      ]
-        .filter(Boolean)
-        .join(" ") + venueTag;
+    // Validated form carries no venue tag (kept in the expanded pane only).
+    const raw = [
+      isOil ? shortName(primaryProduct) : "",
+      tenor,
+      strikeStrat,
+      refRaw ? `x${refRaw}` : "",
+      status === "trades" ? "trades" : "",
+      rawPrem,
+      side ?? "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-    const strikesEx = strikes.map((s) => dollars(s, strikeDec)).join("/");
-    const premEx = prems.length
-      ? isOil
-        ? `${dollars(prems[0], 2)} bid / ${dollars(prems[1] ?? prems[0], 2)} offer`
-        : `${cents(prems[0])} bid / ${cents(prems[1] ?? prems[0])} offer`
-      : "";
-    const refEx = ref !== null ? ` — ref ${dollars(ref, isOil ? 2 : 2)}` : "";
+    const strikesEx = strikes.map((s) => dollars(s, 2)).join("/");
+    const fmtPrem = (p: number) => (isOil ? dollars(p, 2) : cents(p));
+    let premEx = "";
+    if (prems.length) {
+      if (status === "trades") premEx = `trades ${fmtPrem(prems[0])}`;
+      else if (side) premEx = `${fmtPrem(prems[0])} ${side}`;
+      else
+        premEx = `${fmtPrem(prems[0])} bid / ${fmtPrem(prems[1] ?? prems[0])} offer`;
+    }
+    const refEx = ref !== null ? ` — ref ${dollars(ref, 2)}` : "";
     const venueEx = venue
       ? ` — ${venue.expansion.split(" ")[0]}${venueOnly ? " only" : ""}`
       : "";
     const expanded =
-      `${month.name} ${shortName(primaryProduct)} ${strikesEx} ${strategy!.expansion}` +
+      `${monthEx} ${shortName(primaryProduct)} ${strikesEx} ${strategy!.expansion}` +
       refEx +
       (premEx ? ` — ${premEx}` : "") +
       venueEx;
@@ -370,6 +447,7 @@ export function recognize(input: string): RecognizedQuote | null {
     const needsConfirm: string[] = [];
     if (strikesDerived) needsConfirm.push("strikes");
     if (premWasDerived) needsConfirm.push("premium");
+    if (isOil && !year) needsConfirm.push("tenor"); // crude requires a year
 
     return {
       shape,
@@ -378,13 +456,15 @@ export function recognize(input: string): RecognizedQuote | null {
       needsConfirm,
       structured: {
         instrument: "option",
-        contract: month.code,
+        contract: tenor,
         product: primaryProduct,
         assetClass,
         strategy: strategy!.id,
         strikes,
         ref,
         premium: prems,
+        side,
+        status,
         venue: venue?.id ?? null,
         venueOnly,
       },
@@ -397,20 +477,23 @@ export function recognize(input: string): RecognizedQuote | null {
     const isOil = assetClass === "oil";
     const dec = isOil ? 2 : 3; // ng futures X.YYY ; oil XX.YY
     const prices = grp.atoms.map((a) => priceValue(a, assetClass, false));
-    const raw = `${month.code} ${grp.atoms.join("/")}`;
+    // Crude keeps the product token + month+year; NG is implied + bare month.
+    const raw = isOil
+      ? `${shortName(primaryProduct)} ${tenor} ${grp.atoms.join("/")}`
+      : `${tenor} ${grp.atoms.join("/")}`;
     const pxEx =
       prices.length > 1
         ? `${dollars(prices[0], dec)} bid / ${dollars(prices[1], dec)} offer`
         : dollars(prices[0], dec);
-    const expanded = `${month.name} ${shortName(primaryProduct)} future — ${pxEx}`;
+    const expanded = `${monthEx} ${shortName(primaryProduct)} future — ${pxEx}`;
     return {
       shape,
       raw,
       expanded,
-      needsConfirm: [],
+      needsConfirm: isOil && !year ? ["tenor"] : [],
       structured: {
         instrument: "future",
-        contract: month.code,
+        contract: tenor,
         product: primaryProduct,
         assetClass,
         prices,
@@ -423,10 +506,11 @@ export function recognize(input: string): RecognizedQuote | null {
     const grp = numberGroups[0];
     if (!grp) return null;
     const vals = grp.atoms.map((a) => priceValue(a, assetClass, true));
-    const raw =
-      `${shortName(primaryProduct).toUpperCase()} ${month.code} basis ` +
-      grp.atoms.join("/") +
-      (venue ? ` ${venue.expansion.split(" ")[0]}` : "");
+    // Validated form: hub + month + slash bid/offer with leading-zero
+    // decimals — NO "basis" keyword, NO venue tag (those stay spoken cues).
+    const raw = `${shortName(primaryProduct).toUpperCase()} ${month.code} ${vals
+      .map(rawDiff)
+      .join("/")}`;
     const px =
       vals.length > 1
         ? `${cents(vals[0])} bid / ${cents(vals[1])} offer`
@@ -456,7 +540,8 @@ export function recognize(input: string): RecognizedQuote | null {
   const legA = productIds[0] ?? "hh";
   const legB = productIds[1] ?? "hh";
   const vals = grp.atoms.map((a) => priceValue(a, assetClass, isDifferential));
-  const raw = `${legA}/${legB} ${month.code} spread ` + grp.atoms.join("/");
+  // Validated form: hub1/hub2 + month + slash values — NO "spread" keyword.
+  const raw = `${legA}/${legB} ${month.code} ${vals.map(rawDiff).join("/")}`;
   const px =
     vals.length > 1 ? `${cents(vals[0])} / ${cents(vals[1])}` : cents(vals[0]);
   const expanded =

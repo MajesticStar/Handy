@@ -1,19 +1,33 @@
-// FlowTrade 2C — recognizer fixtures.
-// One test per demo cell, plus no-match fall-through. Run: `bun test`.
+// FlowTrade 2C — recognizer fixtures, RE-GROUNDED to validated ICE Chat formats.
 //
-// Inputs mimic lightly-normalized speech-to-text (digit runs, dropped decimals)
-// so the tests exercise the decimal re-derivation, not just string matching.
+// Every expected `raw` string below is a form confirmed recognized (blue) in
+// live ICE Chat — see the vault docs `ice-chat-recognition-validation.md` and
+// `market-string-reference-ng-wti.md`. Green here means "produces text we
+// watched go blue", not just internal consistency. Run: `bun test`.
+//
+// Inputs mimic lightly-normalized speech-to-text (digit runs, dropped
+// decimals, glued tokens) so the tests exercise the decimal re-derivation.
+//
+// Key format rules encoded (from validation, 2026-06-04 → 06-10):
+//  - recognition is in-place: accepted input format IS the recognized form
+//  - no venue tag and no "basis"/"spread" keyword in the recognized string
+//  - NG basis / locational spread: slash bid/offer, leading-zero decimals
+//  - WTI: product token kept, 2-digit year REQUIRED, strikes CARRY decimals
+//  - trailing "out" excluded from the recognized string
+//  - "trades" etc. = trade print (renders red in ICE Chat, kept in raw)
 
 import { test, expect } from "bun:test";
 import { recognize } from "./recognizer";
 
-test("cell 1 — NG options (hero), bare premium re-derived, NYMEX-only venue", () => {
-  const r = recognize("K 3.25/4 cs x2.95 61/64 nymex only");
+// ---- the six demo cells -----------------------------------------------------
+
+test("cell 1 — NG options (hero), bare premium re-derived", () => {
+  const r = recognize("K 3.25/4 cs x2.95 61/64");
   expect(r).not.toBeNull();
   expect(r!.shape).toBe("options");
-  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064 NYMEX only");
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");
   expect(r!.expanded).toBe(
-    "May Henry Hub $3.25/$4.00 call spread — ref $2.95 — 6.1¢ bid / 6.4¢ offer — NYMEX only",
+    "May Henry Hub $3.25/$4.00 call spread — ref $2.95 — 6.1¢ bid / 6.4¢ offer",
   );
   expect(r!.needsConfirm).toEqual(["premium"]);
 });
@@ -26,50 +40,107 @@ test("cell 2 — NG outright future (3-decimal scale)", () => {
   expect(r!.needsConfirm).toEqual([]);
 });
 
-test("cell 3 — NG basis differential (signed, cents, ICE)", () => {
+test("cell 3 — NG basis: slash form, NO 'basis' word, NO venue in raw", () => {
+  // trader SAYS "basis" (and maybe a venue) — neither appears in the pasted string
   const r = recognize("HSC K basis -.045/-.04 ice");
   expect(r!.shape).toBe("basis");
-  expect(r!.raw).toBe("HSC K basis -.045/-.04 ICE");
+  expect(r!.raw).toBe("HSC K -0.045/-0.04");
   expect(r!.expanded).toBe(
     "HSC May basis vs Henry Hub — −4.5¢ bid / −4¢ offer — ICE",
   );
   expect(r!.needsConfirm).toEqual(["basis"]);
 });
 
-test("cell 4 — NG basis locational spread (two hubs)", () => {
-  const r = recognize("waha/henry K spread -.95/-.90");
+test("cell 4 — locational spread: hub1/hub2, NO 'spread' word in raw", () => {
+  const r = recognize("waha/henry K spread -.05/-.04");
   expect(r!.shape).toBe("spread");
-  expect(r!.raw).toBe("waha/hh K spread -.95/-.90");
+  expect(r!.raw).toBe("waha/hh K -0.05/-0.04");
   expect(r!.expanded).toBe(
-    "Waha vs Henry Hub May locational spread (primary leg Waha) — −95¢ / −90¢",
+    "Waha vs Henry Hub May locational spread (primary leg Waha) — −5¢ / −4¢",
   );
   expect(r!.needsConfirm).toEqual(["spread"]);
 });
 
-test("cell 5 — WTI options (no-decimal strikes -> dollars; gas-vs-oil aha)", () => {
-  const r = recognize("wti Z 6250/7000 cs x64.50 1.10/1.15");
+test("cell 5 — WTI options: product token kept, year kept, strikes carry decimals", () => {
+  const r = recognize("wti z25 6250/7000 cs x64.50 1.20/1.30");
   expect(r!.shape).toBe("options");
-  expect(r!.raw).toBe("Z 6250/7000 cs x64.50 1.10/1.15");
+  expect(r!.raw).toBe("WTI Z25 62.50/70.00 cs x64.50 1.20/1.30");
   expect(r!.expanded).toBe(
-    "December WTI $62.50/$70.00 call spread — ref $64.50 — $1.10 bid / $1.15 offer",
+    "December 2025 WTI $62.50/$70.00 call spread — ref $64.50 — $1.20 bid / $1.30 offer",
   );
   expect(r!.needsConfirm).toEqual(["strikes"]);
 });
 
-test("cell 6 — WTI outright future", () => {
-  const r = recognize("wti Z 64.50/64.55");
+test("cell 6 — WTI outright future: product + month+year kept", () => {
+  const r = recognize("wti z25 57.33/57.35");
   expect(r!.shape).toBe("future");
-  expect(r!.raw).toBe("Z 64.50/64.55");
-  expect(r!.expanded).toBe("December WTI future — $64.50 bid / $64.55 offer");
+  expect(r!.raw).toBe("WTI Z25 57.33/57.35");
+  expect(r!.expanded).toBe(
+    "December 2025 WTI future — $57.33 bid / $57.35 offer",
+  );
   expect(r!.needsConfirm).toEqual([]);
 });
+
+// ---- crude tenor handling ---------------------------------------------------
+
+test("crude year — month name + separate year token ('december 25')", () => {
+  const r = recognize("wti december 25 57.33/57.35");
+  expect(r!.raw).toBe("WTI Z25 57.33/57.35");
+});
+
+test("crude with NO year — tenor flagged amber, not invented", () => {
+  const r = recognize("wti z 57.33/57.35");
+  expect(r!.raw).toBe("WTI Z 57.33/57.35");
+  expect(r!.needsConfirm).toContain("tenor");
+});
+
+test("WTI bare strikes expand to required decimals (60 -> 60.00)", () => {
+  const r = recognize("wti z25 60/65 cs x62.50 1.20/1.30");
+  expect(r!.raw).toBe("WTI Z25 60.00/65.00 cs x62.50 1.20/1.30");
+  expect(r!.needsConfirm).toEqual(["strikes"]);
+});
+
+// ---- side / size / status (validated NG forms) -------------------------------
+
+test("single-sided bid — '.061 bid', no slash pair", () => {
+  const r = recognize("K 3.25/4 cs x2.95 .061 bid");
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061 bid");
+  expect(r!.expanded).toBe(
+    "May Henry Hub $3.25/$4.00 call spread — ref $2.95 — 6.1¢ bid",
+  );
+  expect(r!.needsConfirm).toEqual([]);
+});
+
+test("trailing 'out' is excluded from the recognized string", () => {
+  const r = recognize("U 3.50/4 cs x3.16 .098 offer out");
+  expect(r!.raw).toBe("U 3.50/4 cs x3.16 .098 offer");
+});
+
+test("trade print — 'trades' kept in raw, marked as a print (renders red)", () => {
+  // glued '3c' = strike 3 + single call, per the real ICE Chat sample
+  const r = recognize("J 3c x2.95 trades .0465");
+  expect(r!.raw).toBe("J 3c x2.95 trades .0465");
+  expect(r!.expanded).toBe(
+    "April Henry Hub $3.00 call — ref $2.95 — trades 4.65¢",
+  );
+  expect(r!.structured.status).toBe("trades");
+});
+
+// ---- cross-cutting ------------------------------------------------------------
 
 test("the gas-vs-oil contrast: same digit shape, 10x different meaning", () => {
   // 'sixty-one' in a gas premium = 6.1¢ ; 'sixty-two fifty' in an oil strike = $62.50
   const gas = recognize("K 3.25/4 cs x2.95 61/64");
-  const oil = recognize("wti Z 6250/7000 cs x64.50 1.10/1.15");
+  const oil = recognize("wti z25 6250/7000 cs x64.50 1.20/1.30");
   expect(gas!.expanded).toContain("6.1¢");
   expect(oil!.expanded).toContain("$62.50");
+});
+
+test("spoken venue is captured but NEVER pasted (not part of any recognized form)", () => {
+  const r = recognize("K 3.25/4 cs x2.95 61/64 nymex only");
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");
+  expect(r!.expanded).toContain("NYMEX only");
+  expect(r!.structured.venue).toBe("nymex");
 });
 
 test("no match — ordinary speech falls through", () => {
