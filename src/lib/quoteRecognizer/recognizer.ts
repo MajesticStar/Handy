@@ -19,6 +19,13 @@
 // (those stay spoken cues only); WTI keeps the product token, requires a
 // 2-digit year, and strikes CARRY decimals (62.50, not 6250); trailing
 // "out" is excluded; trade prints ("trades") stay in the string.
+//
+// Live-dictation repair layer added 2026-06-11 from real Whisper transcripts:
+// strip commas/periods, merge unslashed number runs and fit them to the
+// structure's strike count by scale ("62 50 70" -> 62.50/70.00), accept a
+// standalone "x"/"by" as the reference marker, split a glued premium pair
+// ("6164" -> .061/.064), and apply the ICE-style default-product rule
+// (no product spoken = the desk default, Henry Hub in the prototype).
 
 import lexiconSeed from "../../data/lexicon-seed.json";
 import productSpecs from "../../data/product-specs.json";
@@ -158,7 +165,7 @@ function strikeValue(atom: string, assetClass: string): number {
 function premiumValue(atom: string, assetClass: string): number {
   const { sign, hasDot, body } = num(atom);
   if (hasDot) return sign * parseFloat(body);
-  if (assetClass === "oil") return sign * parseInt(body, 10); // already dollars
+  if (assetClass === "oil") return (sign * parseInt(body, 10)) / 100; // 120 -> 1.20
   return (sign * parseInt(body, 10)) / 1000; // 61 -> 0.061
 }
 
@@ -201,6 +208,25 @@ function rawPremiumNG(v: number): string {
 function rawDiff(v: number): string {
   return `${v < 0 ? "-" : ""}${Math.abs(v)}`;
 }
+
+// How many strikes each structure expects (drives spoken-number pairing).
+const STRIKE_COUNT: Record<string, number> = {
+  c: 1,
+  p: 1,
+  straddle: 1,
+  cs: 2,
+  ps: 2,
+  fence: 2,
+  strangle: 2,
+  call_tree: 3,
+};
+
+// Glue two adjacent spoken integers into one decimal ("62" + "50" -> "62.50").
+function glueAtoms(a: string, b: string): string | null {
+  if (num(a).hasDot || num(b).hasDot) return null;
+  if (num(b).body.length !== 2) return null;
+  return `${a}.${num(b).body}`;
+}
 function shortName(productId: string): string {
   if (SHORT_NAME[productId]) return SHORT_NAME[productId];
   const e = LEX.find((x) => x.id === productId);
@@ -224,7 +250,14 @@ function looksNumeric(token: string): boolean {
 
 export function recognize(input: string): RecognizedQuote | null {
   if (!input || !input.trim()) return null;
-  const tokens = input.trim().toLowerCase().split(/\s+/);
+  // Whisper punctuates spoken lists ("62, 50, 70.") — strip it before parsing.
+  const tokens = input
+    .trim()
+    .toLowerCase()
+    .replace(/[,;]/g, " ")
+    .split(/\s+/)
+    .map((t) => t.replace(/[.,;:!?]+$/, ""))
+    .filter(Boolean);
 
   let monthKey: string | null = null;
   let year: string | null = null; // 2-digit contract year (crude requires it)
@@ -240,13 +273,27 @@ export function recognize(input: string): RecognizedQuote | null {
   const numberGroups: { atoms: string[]; afterRef: boolean }[] = [];
   let seenRef = false;
 
-  for (const t of tokens) {
+  let prevNumeric = false;
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    const wasNumeric = prevNumeric;
+    prevNumeric = false;
     // venue modifier
     if (t === "only") {
       venueOnly = true;
       continue;
     }
     if (t === "vs" || t === "ref") {
+      seenRef = true;
+      continue;
+    }
+    // standalone reference marker — "x 64.50" / "by 6450" (Whisper splits or
+    // mishears the spoken "x"). Only once the quote body has started, so a
+    // leading bare "x" can still be the November month code.
+    if (
+      (t === "x" || t === "by") &&
+      (strategy !== null || numberGroups.length > 0)
+    ) {
       seenRef = true;
       continue;
     }
@@ -280,7 +327,7 @@ export function recognize(input: string): RecognizedQuote | null {
     if (
       monthKey !== null &&
       year === null &&
-      /^\d{2}$/.test(t) &&
+      /^(2[4-9]|3[0-9])$/.test(t) && // plausible contract years only
       productIds.some((p) => P2A[p] === "oil")
     ) {
       year = t;
@@ -293,7 +340,13 @@ export function recognize(input: string): RecognizedQuote | null {
       continue;
     }
 
-    // strategy
+    // strategy — two-word spoken forms first ("call spread", "call tree")
+    const two = i + 1 < tokens.length ? `${t} ${tokens[i + 1]}` : "";
+    if (strategy === null && two && STRATEGIES.has(two)) {
+      strategy = STRATEGIES.get(two)!;
+      i++;
+      continue;
+    }
     if (STRATEGIES.has(t)) {
       strategy = STRATEGIES.get(t)!;
       continue;
@@ -339,9 +392,15 @@ export function recognize(input: string): RecognizedQuote | null {
       }
     }
 
-    // numbers
+    // numbers — consecutive spoken numbers merge into one group ("62 50 70")
     if (looksNumeric(t)) {
-      numberGroups.push({ atoms: splitGroup(t), afterRef: seenRef });
+      const last = numberGroups[numberGroups.length - 1];
+      if (wasNumeric && last && last.afterRef === seenRef) {
+        last.atoms.push(...splitGroup(t));
+      } else {
+        numberGroups.push({ atoms: splitGroup(t), afterRef: seenRef });
+      }
+      prevNumeric = true;
       continue;
     }
     // unknown token -> ignore (lenient)
@@ -351,6 +410,9 @@ export function recognize(input: string): RecognizedQuote | null {
   if (monthKey === null && productIds.length === 0) return null;
   if (numberGroups.length === 0 && refRaw === null) return null;
 
+  // ICE-style default-product rule (Apurva, 2026-06-11): unless a product is
+  // spoken, assume the desk's default. Hardcoded Henry Hub for the prototype;
+  // becomes a per-user setting in production.
   const primaryProduct = productIds[0] ?? "hh";
   const assetClass = P2A[primaryProduct] ?? "ng";
   const isDifferential = assetClass === "ng_basis";
@@ -371,31 +433,83 @@ export function recognize(input: string): RecognizedQuote | null {
   // ----- slot the numbers and render -----
   if (shape === "options") {
     const strikeGroup = numberGroups.find((g) => !g.afterRef);
-    const premGroup = numberGroups.find((g) => g.afterRef);
     if (!strikeGroup) return null;
-    const strikes = strikeGroup.atoms.map((a) => strikeValue(a, assetClass));
-    const ref = refRaw ? strikeValue(refRaw, assetClass) : null;
-    const prems = premGroup
-      ? premGroup.atoms.map((a) => premiumValue(a, assetClass))
-      : [];
-    const premWasDerived = premGroup
-      ? premGroup.atoms.some((a) => !num(a).hasDot)
-      : false;
+
+    // Fit the pre-ref numbers to the structure's strike count — spoken
+    // numbers arrive unslashed ("62 50 70" -> 62.50/70.00 for a 2-strike cs).
+    const strikeAtoms = [...strikeGroup.atoms];
+    const need = STRIKE_COUNT[strategy!.id] ?? strikeAtoms.length;
+    let strikesGlued = false;
+    while (strikeAtoms.length > need) {
+      let merged = false;
+      for (let j = 0; j < strikeAtoms.length - 1; j++) {
+        const g = glueAtoms(strikeAtoms[j], strikeAtoms[j + 1]);
+        if (g) {
+          strikeAtoms.splice(j, 2, g);
+          strikesGlued = true;
+          merged = true;
+          break;
+        }
+      }
+      if (!merged) return null; // numbers don't fit the structure -> not a quote
+    }
+    if (strikeAtoms.length < need) return null;
+    const strikes = strikeAtoms.map((a) => strikeValue(a, assetClass));
+
+    // Silent-over-wrong: strikes that can't belong to this product mean a
+    // mis-heard product (e.g. a clipped "WTI" under the NG default) — show
+    // nothing rather than a confident wrong quote.
+    if (assetClass !== "oil" && strikes.some((s) => Math.abs(s) > 50))
+      return null;
+
+    // Reference + premiums come from the post-ref numbers. The ref may
+    // arrive as a glued token (x64.50), one atom ("6450") or two ("64, 50").
+    const postRef = numberGroups
+      .filter((g) => g.afterRef)
+      .flatMap((g) => g.atoms);
+    let refAtom = refRaw;
+    let premAtoms = postRef;
+    if (refAtom === null && seenRef && postRef.length > 0) {
+      if (postRef.length === 4) {
+        const g = glueAtoms(postRef[0], postRef[1]);
+        refAtom = g ?? postRef[0];
+        premAtoms = g ? postRef.slice(2) : postRef.slice(1);
+      } else {
+        refAtom = postRef[0];
+        premAtoms = postRef.slice(1);
+      }
+    }
+    // A lone bare 4-digit premium is a glued bid/offer pair ("6164" -> 61/64).
+    const premTarget = side || status ? 1 : 2;
+    if (
+      premAtoms.length === 1 &&
+      premTarget === 2 &&
+      !num(premAtoms[0]).hasDot &&
+      num(premAtoms[0]).body.length === 4
+    ) {
+      const b = num(premAtoms[0]).body;
+      premAtoms = [b.slice(0, 2), b.slice(2)];
+    }
+    const prems = premAtoms.map((a) => premiumValue(a, assetClass));
+    const premWasDerived = premAtoms.some((a) => !num(a).hasDot);
+    const ref = refAtom ? strikeValue(refAtom, assetClass) : null;
     // Flag strikes amber only when a decimal was genuinely re-derived: any
     // bare oil strike (60 -> 60.00, 6250 -> 62.50) or a multi-digit bare NG
     // integer (325 -> 3.25). A transcription that carried the decimal is
     // trusted as-is.
-    const strikesDerived = strikeGroup.atoms.some((a) => {
-      const n = num(a);
-      return !n.hasDot && (assetClass === "oil" || n.body.length >= 3);
-    });
+    const strikesDerived =
+      strikesGlued ||
+      strikeAtoms.some((a) => {
+        const n = num(a);
+        return !n.hasDot && (assetClass === "oil" || n.body.length >= 3);
+      });
 
     const isOil = assetClass === "oil";
     // Oil strikes must carry decimals in the pasted string (62.50, never
     // 6250); NG keeps the chat-native atoms as spoken.
     const rawStrikes = isOil
       ? strikes.map((s) => s.toFixed(2)).join("/")
-      : strikeGroup.atoms.join("/");
+      : strikeAtoms.join("/");
     // Single-letter structures glue to the strike (J 3c); multi-letter are
     // spaced (3.25/4 cs) — matching the validated sample forms exactly.
     const strikeStrat =
@@ -409,15 +523,21 @@ export function recognize(input: string): RecognizedQuote | null {
       if (n.hasDot) return n.raw.replace(/^(-?)0\./, "$1.");
       return isOil ? v.toFixed(2) : rawPremiumNG(v);
     };
-    const rawPrem = premGroup
-      ? premGroup.atoms.map((a, i) => rawPremAtom(a, prems[i])).join("/")
-      : "";
+    const rawPrem = premAtoms
+      .map((a, j) => rawPremAtom(a, prems[j]))
+      .join("/");
+    const refDisplay =
+      ref !== null
+        ? isOil
+          ? ref.toFixed(2)
+          : `${parseFloat(ref.toFixed(3))}`
+        : "";
     // Validated form carries no venue tag (kept in the expanded pane only).
     const raw = [
       isOil ? shortName(primaryProduct) : "",
       tenor,
       strikeStrat,
-      refRaw ? `x${refRaw}` : "",
+      refAtom ? `x${refDisplay}` : "",
       status === "trades" ? "trades" : "",
       rawPrem,
       side ?? "",

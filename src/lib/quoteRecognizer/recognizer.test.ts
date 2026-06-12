@@ -143,6 +143,40 @@ test("spoken venue is captured but NEVER pasted (not part of any recognized form
   expect(r!.structured.venue).toBe("nymex");
 });
 
+// ---- live-dictation repair fixtures (real Whisper transcripts, 2026-06-11) ----
+
+test("live transcript — commas, 'by' as ref marker, glued + paired numbers", () => {
+  // Apurva spoke: "WTI Z25 62 50 70 call spread x 64.50 1.20 1.30"
+  const r = recognize("WTI Z25, 62, 50, 70, call spread by 6450, 120, 130.");
+  expect(r).not.toBeNull();
+  expect(r!.raw).toBe("WTI Z25 62.50/70.00 cs x64.50 1.20/1.30");
+  expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
+});
+
+test("live transcript — clipped 'WTI' under the NG default: silent, not wrong", () => {
+  // First word clipped by recording onset; oil-scale strikes can't be NG
+  expect(
+    recognize("Z25, 62, 50, 70, call spread, X, 64, 50, 120, 130"),
+  ).toBeNull();
+});
+
+test("live transcript — clipped month: silent, no November hallucination", () => {
+  // 'x' after the strategy is a ref marker, never the X month code
+  expect(recognize("3.254 call spread x 295 6164")).toBeNull();
+});
+
+test("spoken NG quote — no slashes, commas, multi-word strategy, split x", () => {
+  const r = recognize("May, 3.25, 4, call spread, x 2.95, 61, 64.");
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");
+  expect(r!.needsConfirm).toEqual(["premium"]);
+});
+
+test("spoken NG quote — glued premium pair splits (6164 -> .061/.064)", () => {
+  const r = recognize("may 3.25 4 call spread x 2.95 6164");
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");
+  expect(r!.needsConfirm).toEqual(["premium"]);
+});
+
 test("no match — ordinary speech falls through", () => {
   expect(recognize("the weather is nice today")).toBeNull();
   expect(recognize("")).toBeNull();
