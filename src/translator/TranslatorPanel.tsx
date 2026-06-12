@@ -12,13 +12,8 @@ const CONFIRM_LABELS: Record<string, string> = {
   spread: "spread",
 };
 
-// Panel lingers this long, then gets out of the way (it also hides on the
-// next non-quote dictation or via the close button).
-const AUTO_HIDE_MS = 12000;
-
 const TranslatorPanel: React.FC = () => {
   const [quote, setQuote] = useState<RecognizedQuote | null>(null);
-  const hideTimer = React.useRef<number | undefined>(undefined);
 
   useEffect(() => {
     // The Rust side announces the final transcription text (observational —
@@ -31,13 +26,9 @@ const TranslatorPanel: React.FC = () => {
       await invoke("submit_flowtrade_translation", {
         raw: result?.raw ?? null,
       });
-      window.clearTimeout(hideTimer.current);
       if (result) {
         setQuote(result);
         await invoke("show_translator_panel");
-        hideTimer.current = window.setTimeout(() => {
-          invoke("hide_translator_panel");
-        }, AUTO_HIDE_MS);
       } else {
         setQuote(null);
         await invoke("hide_translator_panel");
