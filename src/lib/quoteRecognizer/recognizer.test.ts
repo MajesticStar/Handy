@@ -126,10 +126,15 @@ test("trade print — 'trades' kept in raw, marked as a print (renders red)", ()
   expect(r!.structured.status).toBe("trades");
 });
 
-test("live transcript — incomplete WTI quote: silent, never invents a leg", () => {
+test("live transcript — strikeless structure: soft hint, never invents", () => {
   // 'cost spread' resolves to cs but there are no strikes — must NOT
-  // fabricate a WTI/HH locational spread (the never-originate rule)
-  expect(recognize("december 25 wti cost spread 120 by 140")).toBeNull();
+  // fabricate strikes or a WTI/HH locational spread (never-originate rule).
+  // Instead: a hint explaining what's missing; transcript pastes unchanged.
+  const r = recognize("December 25 WTI call spread 120 by 140");
+  expect(r).not.toBeNull();
+  expect("raw" in r!).toBe(false);
+  expect((r as { hint: string }).hint).toContain("call spread");
+  expect((r as { hint: string }).hint).toContain("strikes");
 });
 
 test("WTI with month+year spoken BEFORE the product ('December 25 WTI')", () => {

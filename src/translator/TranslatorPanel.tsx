@@ -1,7 +1,12 @@
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import React, { useEffect, useState } from "react";
-import { recognize, type RecognizedQuote } from "@/lib/quoteRecognizer/recognizer";
+import {
+  recognize,
+  isQuote,
+  type QuoteHint,
+  type RecognizedQuote,
+} from "@/lib/quoteRecognizer/recognizer";
 import "./TranslatorPanel.css";
 
 // Human labels for the fields the recognizer marks "needs confirm" (amber).
@@ -13,18 +18,16 @@ const CONFIRM_LABELS: Record<string, string> = {
 };
 
 const TranslatorPanel: React.FC = () => {
-  const [quote, setQuote] = useState<RecognizedQuote | null>(null);
+  const [quote, setQuote] = useState<RecognizedQuote | QuoteHint | null>(null);
 
   useEffect(() => {
-    // The Rust side announces the final transcription text (observational —
-    // it does not change what gets pasted). We recognize it here and decide
-    // whether this is a quote worth showing.
     const setup = listen<string>("flowtrade-transcription", async (event) => {
       const result = recognize(event.payload);
       // R2: answer the paste handshake first — Rust is waiting on this to
       // decide whether to paste clean shorthand or the raw transcript.
+      // A hint pastes nothing different (raw transcript goes through).
       await invoke("submit_flowtrade_translation", {
-        raw: result?.raw ?? null,
+        raw: isQuote(result) ? result.raw : null,
       });
       if (result) {
         setQuote(result);
@@ -45,6 +48,22 @@ const TranslatorPanel: React.FC = () => {
   };
 
   if (!quote) return null;
+
+  if (!isQuote(quote)) {
+    return (
+      <div className="ft-panel">
+        <div className="ft-header" data-tauri-drag-region>
+          <span className="ft-title" data-tauri-drag-region>
+            FlowTrade
+          </span>
+          <button className="ft-close" onClick={dismiss} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+        <div className="ft-hint">{quote.hint}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="ft-panel">

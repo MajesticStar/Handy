@@ -40,6 +40,19 @@ export interface RecognizedQuote {
   structured: Record<string, unknown>;
 }
 
+// Soft landing for an almost-quote (e.g. a call spread with no strikes):
+// nothing is pasted differently — the transcript goes through unchanged —
+// but the panel explains why no market was produced.
+export interface QuoteHint {
+  hint: string;
+}
+
+export function isQuote(
+  r: RecognizedQuote | QuoteHint | null,
+): r is RecognizedQuote {
+  return !!r && "raw" in r;
+}
+
 // ---------------------------------------------------------------------------
 // Reference data
 // ---------------------------------------------------------------------------
@@ -253,7 +266,9 @@ function looksNumeric(token: string): boolean {
   return /[0-9]/.test(token) && !MONTHS[token];
 }
 
-export function recognize(input: string): RecognizedQuote | null {
+export function recognize(
+  input: string,
+): RecognizedQuote | QuoteHint | null {
   if (!input || !input.trim()) return null;
   // Whisper punctuates spoken lists ("62, 50, 70.") and hyphenates number
   // runs ("325-4", "295-61-64") — strip/split before parsing. A hyphen is
@@ -475,8 +490,17 @@ export function recognize(input: string): RecognizedQuote | null {
 
   // ----- slot the numbers and render -----
   if (shape === "options") {
+    // Soft landing when the structure is clear but the strikes aren't —
+    // a real desk habit ("call spread 120 by 140" = price update against
+    // strikes from context). We never invent strikes; we explain instead.
+    const incomplete = (): QuoteHint => ({
+      hint:
+        `Heard a ${monthEx} ${shortName(primaryProduct)} ` +
+        `${strategy!.expansion} — but not its strikes. A complete market ` +
+        `states the strikes; your words were pasted unchanged.`,
+    });
     const strikeGroup = numberGroups.find((g) => !g.afterRef);
-    if (!strikeGroup) return null;
+    if (!strikeGroup) return incomplete();
 
     // Fit the pre-ref numbers to the structure's strike count — spoken
     // numbers arrive unslashed ("62 50 70" -> 62.50/70.00 for a 2-strike cs).
@@ -494,9 +518,9 @@ export function recognize(input: string): RecognizedQuote | null {
           break;
         }
       }
-      if (!merged) return null; // numbers don't fit the structure -> not a quote
+      if (!merged) return incomplete(); // numbers don't fit the structure
     }
-    if (strikeAtoms.length < need) return null;
+    if (strikeAtoms.length < need) return incomplete();
     const strikes = strikeAtoms.map((a) => strikeValue(a, assetClass));
 
     // Silent-over-wrong: strikes that can't belong to this product mean a

@@ -124,3 +124,17 @@
   border-radius: 999px;
   padding: 3px 10px;
 }
+
+/* Soft landing for an almost-quote — amber explanation, no panes. */
+.ft-hint {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #e0a23a;
+  background: #2c2415;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
