@@ -173,6 +173,14 @@ test("live transcript — hyphenated number runs ('325-4', '295-61-64')", () => 
   expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
 });
 
+test("live transcript — spoken '4' arrives as the word 'for'", () => {
+  // Apurva spoke: "May 3.25 4 call spread x 2.95 61 64"
+  const r = recognize("May 325 for call spread by 295 61 64");
+  expect(r).not.toBeNull();
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");
+  expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
+});
+
 test("spoken NG quote — no slashes, commas, multi-word strategy, split x", () => {
   const r = recognize("May, 3.25, 4, call spread, x 2.95, 61, 64.");
   expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");

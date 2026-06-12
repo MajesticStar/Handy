@@ -261,6 +261,18 @@ export function recognize(input: string): RecognizedQuote | null {
     .split(/\s+/)
     .map((t) => t.replace(/[.,;:!?]+$/, ""))
     .filter(Boolean);
+  // Whisper writes a spoken "4" as "for" mid-quote ("325 for call spread").
+  // Convert only between a number and a non-number, so size forms like
+  // "bid for 200" are untouched.
+  for (let i = 1; i < tokens.length - 1; i++) {
+    if (
+      tokens[i] === "for" &&
+      /\d/.test(tokens[i - 1]) &&
+      !/^\d/.test(tokens[i + 1])
+    ) {
+      tokens[i] = "4";
+    }
+  }
 
   let monthKey: string | null = null;
   let year: string | null = null; // 2-digit contract year (crude requires it)
