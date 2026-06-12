@@ -293,6 +293,19 @@ export function recognize(
       tokens[i] = "4";
     }
   }
+  // A spoken "minus"/"negative" arrives as a word — fold it into the next
+  // number as a sign, or basis quotes silently lose their sign (live find
+  // 2026-06-12: a negative basis pasted positive). Reverse order so removals
+  // don't shift unprocessed indices.
+  for (let i = tokens.length - 2; i >= 0; i--) {
+    if (
+      (tokens[i] === "minus" || tokens[i] === "negative") &&
+      /^[\d.]/.test(tokens[i + 1])
+    ) {
+      tokens[i + 1] = "-" + tokens[i + 1];
+      tokens.splice(i, 1);
+    }
+  }
 
   let monthKey: string | null = null;
   let year: string | null = null; // 2-digit contract year (crude requires it)
@@ -421,6 +434,22 @@ export function recognize(
     }
     if (SPREAD_WORDS.has(t)) {
       spreadFlag = true;
+      continue;
+    }
+
+    // product spoken as a multi-word name ("houston ship channel",
+    // "natural gas") — try the longest match first
+    const threeP =
+      i + 2 < tokens.length ? `${t} ${tokens[i + 1]} ${tokens[i + 2]}` : "";
+    if (threeP && PRODUCTS.has(threeP)) {
+      productIds.push(PRODUCTS.get(threeP)!.id);
+      i += 2;
+      continue;
+    }
+    const twoP = i + 1 < tokens.length ? `${t} ${tokens[i + 1]}` : "";
+    if (twoP && PRODUCTS.has(twoP)) {
+      productIds.push(PRODUCTS.get(twoP)!.id);
+      i += 1;
       continue;
     }
 

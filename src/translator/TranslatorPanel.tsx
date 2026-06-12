@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, PhysicalPosition } from "@tauri-apps/api/window";
 import React, { useEffect, useState } from "react";
 import {
   recognize,
@@ -16,6 +17,41 @@ const CONFIRM_LABELS: Record<string, string> = {
   basis: "basis differential",
   spread: "spread",
 };
+
+// Manual header drag — the declarative drag-region doesn't take on this
+// NSPanel, so we move the window ourselves from pointer deltas.
+function startDrag(e: React.PointerEvent) {
+  if ((e.target as HTMLElement).closest(".ft-close")) return;
+  const win = getCurrentWindow();
+  const dpr = window.devicePixelRatio;
+  const sx = e.screenX;
+  const sy = e.screenY;
+  win.outerPosition().then((pos) => {
+    const onMove = (ev: PointerEvent) => {
+      win.setPosition(
+        new PhysicalPosition(
+          Math.round(pos.x + (ev.screenX - sx) * dpr),
+          Math.round(pos.y + (ev.screenY - sy) * dpr),
+        ),
+      );
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  });
+}
+
+const PanelHeader: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => (
+  <div className="ft-header" onPointerDown={startDrag}>
+    <span className="ft-title">FlowTrade</span>
+    <button className="ft-close" onClick={onDismiss} aria-label="Dismiss">
+      ×
+    </button>
+  </div>
+);
 
 const TranslatorPanel: React.FC = () => {
   const [quote, setQuote] = useState<RecognizedQuote | QuoteHint | null>(null);
@@ -52,14 +88,7 @@ const TranslatorPanel: React.FC = () => {
   if (!isQuote(quote)) {
     return (
       <div className="ft-panel">
-        <div className="ft-header" data-tauri-drag-region>
-          <span className="ft-title" data-tauri-drag-region>
-            FlowTrade
-          </span>
-          <button className="ft-close" onClick={dismiss} aria-label="Dismiss">
-            ×
-          </button>
-        </div>
+        <PanelHeader onDismiss={dismiss} />
         <div className="ft-hint">{quote.hint}</div>
       </div>
     );
@@ -67,14 +96,7 @@ const TranslatorPanel: React.FC = () => {
 
   return (
     <div className="ft-panel">
-      <div className="ft-header" data-tauri-drag-region>
-        <span className="ft-title" data-tauri-drag-region>
-          FlowTrade
-        </span>
-        <button className="ft-close" onClick={dismiss} aria-label="Dismiss">
-          ×
-        </button>
-      </div>
+      <PanelHeader onDismiss={dismiss} />
 
       <div className="ft-panes">
         <div className="ft-pane ft-pane-raw">

@@ -167,6 +167,26 @@ test("live transcript — glued month ('J3'), 'calls', leading-zero premium", ()
   expect(r!.needsConfirm).toEqual(["premium"]);
 });
 
+test("live transcript — spoken 'minus' keeps the basis sign", () => {
+  // Apurva spoke: "HSC October basis minus 0.045 minus 0.04" — sign was
+  // silently dropped live (wrong-sign quote pasted). Never again.
+  const r = recognize("HSC October basis minus 0.045 minus 0.04");
+  expect(r).not.toBeNull();
+  expect((r as { raw: string }).raw).toBe("HSC V -0.045/-0.04");
+});
+
+test("live transcript — 'negative' + multi-word hub name", () => {
+  const r = recognize(
+    "houston ship channel october basis negative 0.045 negative 0.04",
+  );
+  expect((r as { raw: string }).raw).toBe("HSC V -0.045/-0.04");
+});
+
+test("live transcript — locational spread with spoken minus", () => {
+  const r = recognize("Waha Henry October spread minus 0.05 minus 0.04");
+  expect((r as { raw: string }).raw).toBe("waha/hh V -0.05/-0.04");
+});
+
 // ---- cross-cutting ------------------------------------------------------------
 
 test("the gas-vs-oil contrast: same digit shape, 10x different meaning", () => {
