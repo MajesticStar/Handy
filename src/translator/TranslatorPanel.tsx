@@ -21,6 +21,11 @@ const TranslatorPanel: React.FC = () => {
     // whether this is a quote worth showing.
     const setup = listen<string>("flowtrade-transcription", async (event) => {
       const result = recognize(event.payload);
+      // R2: answer the paste handshake first — Rust is waiting on this to
+      // decide whether to paste clean shorthand or the raw transcript.
+      await invoke("submit_flowtrade_translation", {
+        raw: result?.raw ?? null,
+      });
       if (result) {
         setQuote(result);
         await invoke("show_translator_panel");

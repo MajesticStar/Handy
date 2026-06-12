@@ -10,6 +10,9 @@
 // taught us that resizing an NSPanel mid-flight is unreliable. Content wraps
 // inside the panel instead.
 
+use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::Mutex;
+
 use tauri::{AppHandle, Manager};
 
 #[cfg(target_os = "macos")]
@@ -112,6 +115,26 @@ pub fn create_translator_panel(app_handle: &AppHandle) {
 
     if let Err(e) = builder.build() {
         log::error!("Failed to create translator panel: {}", e);
+    }
+}
+
+/// Mailbox for the R2 clean-paste handshake. The transcription thread
+/// registers a request before emitting `flowtrade-transcription`; the panel
+/// webview answers through the `submit_flowtrade_translation` command with
+/// the clean shorthand (recognized) or None (not a quote). The transcription
+/// thread falls back to the raw transcript on timeout.
+static PENDING_TRANSLATION: Mutex<Option<Sender<Option<String>>>> =
+    Mutex::new(None);
+
+pub fn register_translation_request() -> Receiver<Option<String>> {
+    let (tx, rx) = channel();
+    *PENDING_TRANSLATION.lock().unwrap() = Some(tx);
+    rx
+}
+
+pub fn submit_translation(raw: Option<String>) {
+    if let Some(tx) = PENDING_TRANSLATION.lock().unwrap().take() {
+        let _ = tx.send(raw);
     }
 }
 

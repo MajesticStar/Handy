@@ -606,12 +606,22 @@ impl ShortcutAction for TranscribeAction {
                                 let ah_clone = ah.clone();
                                 let paste_time = Instant::now();
                                 let final_text = processed.final_text;
-                                // FlowTrade: announce the final text to the
-                                // translator panel. Observational only — the
-                                // paste below is unchanged.
+                                // FlowTrade R2: offer the transcript to the
+                                // translator panel and wait briefly for its
+                                // verdict — a recognized quote pastes as clean
+                                // shorthand; anything else (including panel
+                                // silence/timeout) pastes the raw transcript,
+                                // so dictation can never break.
+                                let verdict =
+                                    crate::panel::register_translation_request();
                                 let _ = ah.emit("flowtrade-transcription", &final_text);
+                                let to_paste = verdict
+                                    .recv_timeout(std::time::Duration::from_millis(400))
+                                    .ok()
+                                    .flatten()
+                                    .unwrap_or(final_text);
                                 ah.run_on_main_thread(move || {
-                                    match utils::paste(final_text, ah_clone.clone()) {
+                                    match utils::paste(to_paste, ah_clone.clone()) {
                                         Ok(()) => debug!(
                                             "Text pasted successfully in {:?}",
                                             paste_time.elapsed()

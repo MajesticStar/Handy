@@ -331,6 +331,13 @@ fn hide_translator_panel(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+fn submit_flowtrade_translation(raw: Option<String>) -> Result<(), String> {
+    panel::submit_translation(raw);
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run(cli_args: CliArgs) {
     // Detect portable mode before anything else
@@ -396,6 +403,7 @@ pub fn run(cli_args: CliArgs) {
             show_main_window_command,
             show_translator_panel,
             hide_translator_panel,
+            submit_flowtrade_translation,
             commands::cancel_operation,
             commands::is_portable,
             commands::get_app_dir_path,
