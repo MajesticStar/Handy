@@ -165,6 +165,14 @@ test("live transcript — clipped month: silent, no November hallucination", () 
   expect(recognize("3.254 call spread x 295 6164")).toBeNull();
 });
 
+test("live transcript — hyphenated number runs ('325-4', '295-61-64')", () => {
+  // Apurva spoke: "May 3.25 4 call spread x 2.95 61 64"
+  const r = recognize("May, 325-4. Call spread by 295-61-64");
+  expect(r).not.toBeNull();
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");
+  expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
+});
+
 test("spoken NG quote — no slashes, commas, multi-word strategy, split x", () => {
   const r = recognize("May, 3.25, 4, call spread, x 2.95, 61, 64.");
   expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064");

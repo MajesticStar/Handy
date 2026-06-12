@@ -250,11 +250,14 @@ function looksNumeric(token: string): boolean {
 
 export function recognize(input: string): RecognizedQuote | null {
   if (!input || !input.trim()) return null;
-  // Whisper punctuates spoken lists ("62, 50, 70.") — strip it before parsing.
+  // Whisper punctuates spoken lists ("62, 50, 70.") and hyphenates number
+  // runs ("325-4", "295-61-64") — strip/split before parsing. A hyphen is
+  // only a separator BETWEEN digits; a leading hyphen stays a minus sign.
   const tokens = input
     .trim()
     .toLowerCase()
     .replace(/[,;]/g, " ")
+    .replace(/(?<=\d)-(?=\d)/g, " ")
     .split(/\s+/)
     .map((t) => t.replace(/[.,;:!?]+$/, ""))
     .filter(Boolean);
