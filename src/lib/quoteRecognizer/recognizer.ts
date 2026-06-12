@@ -512,7 +512,15 @@ export function recognize(input: string): RecognizedQuote | null {
     // 6250); NG keeps the chat-native atoms as spoken.
     const rawStrikes = isOil
       ? strikes.map((s) => s.toFixed(2)).join("/")
-      : strikeAtoms.join("/");
+      : strikeAtoms
+          .map((a, j) => {
+            const n = num(a);
+            // echo as spoken unless the decimal was re-derived (325 -> 3.25)
+            return !n.hasDot && n.body.length >= 3
+              ? `${parseFloat(strikes[j].toFixed(3))}`
+              : a;
+          })
+          .join("/");
     // Single-letter structures glue to the strike (J 3c); multi-letter are
     // spaced (3.25/4 cs) — matching the validated sample forms exactly.
     const strikeStrat =
