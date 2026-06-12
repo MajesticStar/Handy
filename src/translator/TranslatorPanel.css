@@ -23,6 +23,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  cursor: grab; /* drag handle — move the panel by its header */
 }
 
 .ft-title {
@@ -85,7 +86,7 @@
 
 .ft-raw {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 500;
   color: #e5e5ea;
   line-height: 1.4;
@@ -93,7 +94,7 @@
 }
 
 .ft-expanded {
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 500;
   color: #5fe3a1;
   line-height: 1.45;
