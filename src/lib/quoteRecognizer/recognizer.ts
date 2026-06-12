@@ -302,6 +302,13 @@ export function recognize(input: string): RecognizedQuote | null {
       seenRef = true;
       continue;
     }
+    // "at" marks the reference only right after a structure ("call spread
+    // at 64 50"); elsewhere it's the bid/offer word ("61 at 64") and the
+    // number-group flattening handles it.
+    if (t === "at" && strategy !== null && !seenRef) {
+      seenRef = true;
+      continue;
+    }
     // standalone reference marker — "x 64.50" / "by 6450" (Whisper splits or
     // mishears the spoken "x"). Only once the quote body has started, so a
     // leading bare "x" can still be the November month code.
@@ -625,15 +632,16 @@ export function recognize(input: string): RecognizedQuote | null {
   }
 
   if (shape === "future") {
-    const grp = numberGroups[0];
-    if (!grp) return null;
+    // Flatten across groups — a spoken "at" splits the pair ("2.95 at 2.96").
+    const atoms = numberGroups.flatMap((g) => g.atoms);
+    if (!atoms.length) return null;
     const isOil = assetClass === "oil";
     const dec = isOil ? 2 : 3; // ng futures X.YYY ; oil XX.YY
-    const prices = grp.atoms.map((a) => priceValue(a, assetClass, false));
+    const prices = atoms.map((a) => priceValue(a, assetClass, false));
     // Crude keeps the product token + month+year; NG is implied + bare month.
     const raw = isOil
-      ? `${shortName(primaryProduct)} ${tenor} ${grp.atoms.join("/")}`
-      : `${tenor} ${grp.atoms.join("/")}`;
+      ? `${shortName(primaryProduct)} ${tenor} ${atoms.join("/")}`
+      : `${tenor} ${atoms.join("/")}`;
     const pxEx =
       prices.length > 1
         ? `${dollars(prices[0], dec)} bid / ${dollars(prices[1], dec)} offer`

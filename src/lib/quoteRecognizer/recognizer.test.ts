@@ -138,6 +138,19 @@ test("WTI with month+year spoken BEFORE the product ('December 25 WTI')", () => 
   expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
 });
 
+test("live transcript — 'at' as the spoken reference marker", () => {
+  // Apurva spoke: "WTI December 25 62 50 70 call spread at 64 50 120 130"
+  const r = recognize("WTI December 25 62 50 70 call spread at 64 50 120 130");
+  expect(r!.raw).toBe("WTI Z25 62.50/70.00 cs x64.50 1.20/1.30");
+  expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
+});
+
+test("spoken future — 'at' splits the pair ('2.95 at 2.96')", () => {
+  const r = recognize("May 2.95 at 2.96");
+  expect(r!.raw).toBe("K 2.95/2.96");
+  expect(r!.expanded).toBe("May Henry Hub future — $2.950 bid / $2.960 offer");
+});
+
 // ---- cross-cutting ------------------------------------------------------------
 
 test("the gas-vs-oil contrast: same digit shape, 10x different meaning", () => {
