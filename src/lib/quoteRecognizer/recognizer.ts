@@ -699,23 +699,40 @@ export function recognize(
     // Flatten across groups — a spoken "at" splits the pair ("2.95 at 2.96").
     const atoms = numberGroups.flatMap((g) => g.atoms);
     if (!atoms.length) return null;
+    // A future is one price or a bid/offer pair; more numbers means we
+    // mis-heard a structure — silence over a fabricated multi-leg "future".
+    if (atoms.length > 2) return null;
     const isOil = assetClass === "oil";
     const dec = isOil ? 2 : 3; // ng futures X.YYY ; oil XX.YY
     const prices = atoms.map((a) => priceValue(a, assetClass, false));
+    // Paste derived decimals, not the spoken digits (295 -> 2.95,
+    // 5733 -> 57.33); echo atoms that carried their own decimal.
+    const priceDerived = atoms.some((a) => !num(a).hasDot);
+    const rawPx = atoms
+      .map((a, j) => {
+        if (num(a).hasDot) return a;
+        return isOil
+          ? prices[j].toFixed(2)
+          : `${parseFloat(prices[j].toFixed(3))}`;
+      })
+      .join("/");
     // Crude keeps the product token + month+year; NG is implied + bare month.
     const raw = isOil
-      ? `${shortName(primaryProduct)} ${tenor} ${atoms.join("/")}`
-      : `${tenor} ${atoms.join("/")}`;
+      ? `${shortName(primaryProduct)} ${tenor} ${rawPx}`
+      : `${tenor} ${rawPx}`;
     const pxEx =
       prices.length > 1
         ? `${dollars(prices[0], dec)} bid / ${dollars(prices[1], dec)} offer`
         : dollars(prices[0], dec);
     const expanded = `${monthEx} ${shortName(primaryProduct)} future — ${pxEx}`;
+    const needsConfirm: string[] = [];
+    if (priceDerived) needsConfirm.push("price");
+    if (isOil && !year) needsConfirm.push("tenor");
     return {
       shape,
       raw,
       expanded,
-      needsConfirm: isOil && !year ? ["tenor"] : [],
+      needsConfirm,
       structured: {
         instrument: "future",
         contract: tenor,
@@ -728,9 +745,10 @@ export function recognize(
   }
 
   if (shape === "basis") {
-    const grp = numberGroups[0];
-    if (!grp) return null;
-    const vals = grp.atoms.map((a) => priceValue(a, assetClass, true));
+    // Flatten — stray words must not split the bid/offer pair.
+    const atoms = numberGroups.flatMap((g) => g.atoms);
+    if (!atoms.length || atoms.length > 2) return null;
+    const vals = atoms.map((a) => priceValue(a, assetClass, true));
     // Validated form: hub + month + slash bid/offer with leading-zero
     // decimals — NO "basis" keyword, NO venue tag (those stay spoken cues).
     const raw = `${shortName(primaryProduct).toUpperCase()} ${month.code} ${vals
@@ -760,11 +778,13 @@ export function recognize(
   }
 
   // shape === "spread" (locational)
-  const grp = numberGroups[0];
-  if (!grp) return null;
+  const spreadAtoms = numberGroups.flatMap((g) => g.atoms);
+  if (!spreadAtoms.length || spreadAtoms.length > 2) return null;
   const legA = productIds[0];
   const legB = productIds[1];
-  const vals = grp.atoms.map((a) => priceValue(a, assetClass, isDifferential));
+  const vals = spreadAtoms.map((a) =>
+    priceValue(a, assetClass, isDifferential),
+  );
   // Validated form: hub1/hub2 + month + slash values — NO "spread" keyword.
   const raw = `${legA}/${legB} ${month.code} ${vals.map(rawDiff).join("/")}`;
   const px =

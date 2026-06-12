@@ -14,6 +14,8 @@ import "./TranslatorPanel.css";
 const CONFIRM_LABELS: Record<string, string> = {
   strikes: "strikes",
   premium: "premium",
+  price: "price",
+  tenor: "month/year",
   basis: "basis differential",
   spread: "spread",
 };

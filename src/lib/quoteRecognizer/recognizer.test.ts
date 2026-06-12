@@ -187,6 +187,23 @@ test("live transcript — locational spread with spoken minus", () => {
   expect((r as { raw: string }).raw).toBe("waha/hh V -0.05/-0.04");
 });
 
+test("live ICE round 1 — NG future pastes derived decimals (295 -> 2.95)", () => {
+  const r = recognize("May 295 at 296");
+  expect((r as { raw: string }).raw).toBe("K 2.95/2.96");
+  expect((r as { needsConfirm: string[] }).needsConfirm).toEqual(["price"]);
+});
+
+test("live ICE round 1 — WTI future pastes derived decimals (5733 -> 57.33)", () => {
+  const r = recognize("WTI September 25 5733 at 5735");
+  expect((r as { raw: string }).raw).toBe("WTI U25 57.33/57.35");
+  expect((r as { needsConfirm: string[] }).needsConfirm).toEqual(["price"]);
+});
+
+test("live ICE round 1 — lost structure word: silent, no 4-leg 'future'", () => {
+  // garbled straddle pasted 'K 350/345/180/190' live — never again
+  expect(recognize("May 350 345 180 190")).toBeNull();
+});
+
 // ---- cross-cutting ------------------------------------------------------------
 
 test("the gas-vs-oil contrast: same digit shape, 10x different meaning", () => {
