@@ -338,12 +338,17 @@ export function recognize(input: string): RecognizedQuote | null {
         continue;
       }
     }
-    // bare 2-digit year after the month ("december 25") — crude only
+    // bare 2-digit year after the month ("december 25") — crude only.
+    // The product may come before OR after the year ("December 25 WTI"),
+    // so check the whole utterance, not just what's parsed so far.
     if (
       monthKey !== null &&
       year === null &&
       /^(2[4-9]|3[0-9])$/.test(t) && // plausible contract years only
-      productIds.some((p) => P2A[p] === "oil")
+      tokens.some((tok) => {
+        const e = PRODUCTS.get(tok);
+        return !!e && P2A[e.id] === "oil";
+      })
     ) {
       year = t;
       continue;
@@ -435,7 +440,12 @@ export function recognize(input: string): RecognizedQuote | null {
   // shape
   let shape: Shape;
   if (strategy) shape = "options";
-  else if (spreadFlag) shape = "spread";
+  else if (spreadFlag) {
+    // A locational spread needs BOTH hubs spoken — never invent a leg.
+    // "spread" with no recognizable structure means we mis-heard: stay silent.
+    if (productIds.length < 2) return null;
+    shape = "spread";
+  }
   else if (basisFlag || (isDifferential && numberGroups.length))
     shape = "basis";
   else shape = "future";
@@ -680,8 +690,8 @@ export function recognize(input: string): RecognizedQuote | null {
   // shape === "spread" (locational)
   const grp = numberGroups[0];
   if (!grp) return null;
-  const legA = productIds[0] ?? "hh";
-  const legB = productIds[1] ?? "hh";
+  const legA = productIds[0];
+  const legB = productIds[1];
   const vals = grp.atoms.map((a) => priceValue(a, assetClass, isDifferential));
   // Validated form: hub1/hub2 + month + slash values — NO "spread" keyword.
   const raw = `${legA}/${legB} ${month.code} ${vals.map(rawDiff).join("/")}`;

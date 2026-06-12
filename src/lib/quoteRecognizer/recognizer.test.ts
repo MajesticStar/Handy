@@ -126,6 +126,18 @@ test("trade print — 'trades' kept in raw, marked as a print (renders red)", ()
   expect(r!.structured.status).toBe("trades");
 });
 
+test("live transcript — incomplete WTI quote: silent, never invents a leg", () => {
+  // 'cost spread' resolves to cs but there are no strikes — must NOT
+  // fabricate a WTI/HH locational spread (the never-originate rule)
+  expect(recognize("december 25 wti cost spread 120 by 140")).toBeNull();
+});
+
+test("WTI with month+year spoken BEFORE the product ('December 25 WTI')", () => {
+  const r = recognize("December 25 WTI 62 50 70 call spread x 64.50 120 130");
+  expect(r!.raw).toBe("WTI Z25 62.50/70.00 cs x64.50 1.20/1.30");
+  expect(r!.needsConfirm).toEqual(["strikes", "premium"]);
+});
+
 // ---- cross-cutting ------------------------------------------------------------
 
 test("the gas-vs-oil contrast: same digit shape, 10x different meaning", () => {
