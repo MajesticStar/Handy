@@ -151,6 +151,17 @@ test("spoken future — 'at' splits the pair ('2.95 at 2.96')", () => {
   expect(r!.expanded).toBe("May Henry Hub future — $2.950 bid / $2.960 offer");
 });
 
+test("live transcript — glued month ('J3'), 'calls', leading-zero premium", () => {
+  // Apurva spoke: "J 3 call at 2.95 trades .0465"
+  const r = recognize("J3 calls at 295, trades 0465");
+  expect(r).not.toBeNull();
+  expect(r!.raw).toBe("J 3c x2.95 trades .0465");
+  expect(r!.expanded).toBe(
+    "April Henry Hub $3.00 call — ref $2.95 — trades 4.65¢",
+  );
+  expect(r!.needsConfirm).toEqual(["premium"]);
+});
+
 // ---- cross-cutting ------------------------------------------------------------
 
 test("the gas-vs-oil contrast: same digit shape, 10x different meaning", () => {

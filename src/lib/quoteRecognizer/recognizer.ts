@@ -166,6 +166,10 @@ function premiumValue(atom: string, assetClass: string): number {
   const { sign, hasDot, body } = num(atom);
   if (hasDot) return sign * parseFloat(body);
   if (assetClass === "oil") return (sign * parseInt(body, 10)) / 100; // 120 -> 1.20
+  // NG: a leading zero means the digits sit right after the dot
+  // ("0465" -> 0.0465); otherwise low scale 0.0XX ("61" -> 0.061).
+  if (body.startsWith("0"))
+    return (sign * parseInt(body, 10)) / 10 ** body.length;
   return (sign * parseInt(body, 10)) / 1000; // 61 -> 0.061
 }
 
@@ -199,9 +203,10 @@ function cents(v: number): string {
   const s = parseFloat(c.toFixed(2)).toString();
   return `${fmtSign(v)}${s}¢`;
 }
-// Raw-shorthand rendering of a gas premium: leading-dot, 3 decimals (.061).
+// Raw-shorthand rendering of a gas premium: leading-dot, natural precision
+// (.061, .0465).
 function rawPremiumNG(v: number): string {
-  return `${fmtSign(v)}${Math.abs(v).toFixed(3).replace(/^0/, "")}`;
+  return `${fmtSign(v)}${Math.abs(v).toString().replace(/^0/, "")}`;
 }
 // Raw rendering of a basis/spread differential: ASCII sign + leading zero
 // (-0.045), the validated ICE Chat form.
@@ -336,12 +341,18 @@ export function recognize(input: string): RecognizedQuote | null {
       monthKey = MONTH_NAMES[t];
       continue;
     }
-    // month glued to a 2-digit year: z25 / dec25 / sep25 (crude tenor)
+    // month glued to digits: a year ("z25", "dec25") or a strike/price
+    // ("J3", "K325" — Whisper glues the month to the next number)
     if (monthKey === null) {
-      const my = t.match(/^([a-z]+)(\d{2})$/);
+      const my = t.match(/^([a-z]+)(\d+)$/);
       if (my && (MONTHS[my[1]] || MONTH_NAMES[my[1]])) {
         monthKey = MONTHS[my[1]] ? my[1] : MONTH_NAMES[my[1]];
-        year = my[2];
+        if (/^(2[4-9]|3[0-9])$/.test(my[2])) {
+          year = my[2];
+        } else {
+          numberGroups.push({ atoms: [my[2]], afterRef: seenRef });
+          prevNumeric = true;
+        }
         continue;
       }
     }
