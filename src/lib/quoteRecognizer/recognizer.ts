@@ -194,8 +194,17 @@ function priceValue(
   isDifferential: boolean,
 ): number {
   const { sign, hasDot, body } = num(atom);
+  if (hasDot && isDifferential) {
+    // a spoken "four and a half" style value ("4.5") is cents -> 0.045
+    const v = parseFloat(body);
+    return v >= 1 ? (sign * v) / 100 : sign * v;
+  }
   if (hasDot) return sign * parseFloat(body);
-  if (isDifferential) return (sign * parseInt(body, 10)) / 1000; // 45 -> 0.045 cents
+  // basis cents are digit-count scaled: "45" = 4.5c -> 0.045, "4" = 4c -> 0.04
+  if (isDifferential)
+    return body.length === 1
+      ? (sign * parseInt(body, 10)) / 100
+      : (sign * parseInt(body, 10)) / 1000; cents
   if (assetClass === "oil") return (sign * parseInt(body, 10)) / 100;
   return body.length <= 1
     ? sign * parseInt(body, 10)
@@ -292,6 +301,24 @@ export function recognize(
     ) {
       tokens[i] = "4";
     }
+  }
+  // Whisper writes small bare numbers as WORDS ("minus five") — convert
+  // before sign folding (live find 2026-06-12: Waha/Henry never parsed).
+  const NUMBER_WORDS: Record<string, string> = {
+    zero: "0",
+    one: "1",
+    two: "2",
+    three: "3",
+    four: "4",
+    five: "5",
+    six: "6",
+    seven: "7",
+    eight: "8",
+    nine: "9",
+    ten: "10",
+  };
+  for (let i = 0; i < tokens.length; i++) {
+    if (NUMBER_WORDS[tokens[i]]) tokens[i] = NUMBER_WORDS[tokens[i]];
   }
   // A spoken "minus"/"negative" arrives as a word — fold it into the next
   // number as a sign, or basis quotes silently lose their sign (live find

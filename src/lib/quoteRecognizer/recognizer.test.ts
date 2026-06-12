@@ -182,6 +182,19 @@ test("live transcript — 'negative' + multi-word hub name", () => {
   expect((r as { raw: string }).raw).toBe("HSC V -0.045/-0.04");
 });
 
+test("live ICE round 1 — single-digit basis cents ('minus 4' -> -0.04)", () => {
+  // pasted 'HSC V -0.045/-0.004' live — lone digits are whole cents
+  const r = recognize("HSC October basis minus 45 minus 4");
+  expect((r as { raw: string }).raw).toBe("HSC V -0.045/-0.04");
+});
+
+test("live ICE round 1 — number WORDS ('minus five minus four')", () => {
+  // Whisper spelled the numbers out; recognizer found no numbers at all
+  const r = recognize("Waha, Henry, October spread minus five, minus four.");
+  expect(r).not.toBeNull();
+  expect((r as { raw: string }).raw).toBe("waha/hh V -0.05/-0.04");
+});
+
 test("live transcript — locational spread with spoken minus", () => {
   const r = recognize("Waha Henry October spread minus 0.05 minus 0.04");
   expect((r as { raw: string }).raw).toBe("waha/hh V -0.05/-0.04");
