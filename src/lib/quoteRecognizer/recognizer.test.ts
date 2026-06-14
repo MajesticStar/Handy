@@ -321,6 +321,25 @@ test("user lexicon: a trader-added strategy word is recognized, then cleared", (
   expect(recognize("K 3.25/4 kite x2.95 61/64")).toBeNull();
 });
 
+test("user lexicon: a word taught as an alias of an existing structure renders the CLEAN code", () => {
+  // The "teach a word" fix stores the new word as an alias on the existing
+  // entry (override of seed `cs`), so the shorthand is `cs`, not a machine id.
+  setUserLexicon([
+    {
+      id: "cs",
+      term: "cs",
+      aliases: ["call spread", "wobble"],
+      expansion: "call spread",
+      token_class: "strategy",
+    },
+  ]);
+  const r = recognize("K 3.25/4 wobble x2.95 61/64");
+  expect(r).not.toBeNull();
+  expect(r!.shape).toBe("options");
+  expect(r!.raw).toBe("K 3.25/4 cs x2.95 .061/.064"); // clean code, not user-<id>
+  setUserLexicon([]);
+});
+
 // ---- near-miss detection (the "teach a word" prompt trigger) ----------------
 // Fires only on a real quote attempt (a month + a number) so the panel never
 // pops up on ordinary speech.

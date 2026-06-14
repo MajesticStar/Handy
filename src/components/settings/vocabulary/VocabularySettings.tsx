@@ -210,6 +210,11 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   );
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
+  // "This word means →" teach-as-alias mode. meansId = the existing entry the
+  // new spoken word attaches to as an alias ("" = create a brand-new entry).
+  // aliasWord = the spoken word being taught.
+  const [meansId, setMeansId] = useState("");
+  const [aliasWord, setAliasWord] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -229,6 +234,8 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
     if (teachPhrase) {
       setIsAdding(true);
       setDraft(emptyDraft);
+      setMeansId("");
+      setAliasWord("");
       cancelEdit();
     }
   }, [teachPhrase]);
@@ -247,6 +254,47 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
     setEditDraft(emptyDraft);
   };
 
+  const resetAddForm = () => {
+    setIsAdding(false);
+    setDraft(emptyDraft);
+    setMeansId("");
+    setAliasWord("");
+  };
+
+  // Teach a spoken word as another way of saying an existing entry. We add it
+  // as an alias on that entry (persisted as an override of the same id), so the
+  // recognizer renders the entry's clean code — not a machine id. No recognizer
+  // change needed: aliases already resolve to the existing entry.
+  const handleSaveAlias = () => {
+    const word = aliasWord.trim().toLowerCase();
+    if (!word || !meansId) return;
+    const target = computeDisplayed(additions, sessionDeletions).find(
+      (e) => e.id === meansId,
+    );
+    if (!target) return;
+    const already =
+      target.term.toLowerCase() === word ||
+      target.aliases.some((a) => a.toLowerCase() === word);
+    if (already) {
+      resetAddForm();
+      return;
+    }
+    const updated: LexiconEntry = {
+      ...target,
+      aliases: [...target.aliases, word],
+    };
+    const idx = additions.findIndex((a) => a.id === meansId);
+    let next: LexiconEntry[];
+    if (idx >= 0) {
+      next = additions.slice();
+      next[idx] = updated;
+    } else {
+      next = [updated, ...additions];
+    }
+    commitAdditions(next);
+    resetAddForm();
+  };
+
   const handleAdd = () => {
     const term = draft.term.trim();
     const expansion = draft.expansion.trim();
@@ -262,8 +310,7 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
         .filter(Boolean),
     };
     commitAdditions([newEntry, ...additions]);
-    setDraft(emptyDraft);
-    setIsAdding(false);
+    resetAddForm();
   };
 
   const handleStartEdit = (entry: LexiconEntry) => {
@@ -323,7 +370,7 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
     setAdditions([]);
     setSessionDeletions(new Set());
     setShowResetConfirm(false);
-    setIsAdding(false);
+    resetAddForm();
     cancelEdit();
     const ok = await saveToDisk([]);
     if (!ok) {
@@ -337,6 +384,18 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   ).length;
   const overrideCount = additions.filter((a) => SEED_IDS.has(a.id)).length;
   const hasChanges = trueAdditionsCount > 0 || overrideCount > 0;
+
+  // Entries a taught word can map onto — the classes that appear in the
+  // shorthand (strategy / side / product). Strategy + side first (short, common
+  // teach targets), then products, each alphabetical.
+  const classOrder: Record<string, number> = { strategy: 0, side: 1, product: 2 };
+  const teachTargets = displayed
+    .filter((e) => e.token_class in classOrder)
+    .sort(
+      (a, b) =>
+        classOrder[a.token_class] - classOrder[b.token_class] ||
+        a.term.localeCompare(b.term),
+    );
 
   return (
     <div className="max-w-3xl w-full mx-auto space-y-6">
@@ -367,7 +426,8 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
               )}
               <Button
                 onClick={() => {
-                  setIsAdding((v) => !v);
+                  if (isAdding) resetAddForm();
+                  else setIsAdding(true);
                   cancelEdit();
                 }}
                 variant="primary"
@@ -401,26 +461,65 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
             </div>
           )}
 
-          {isAdding && teachPhrase && (
-            <p className="text-xs text-mid-gray">
-              Heard: <span className="font-mono">“{teachPhrase}”</span> — add the
-              word FlowTrade missed.
-            </p>
-          )}
-
           {isAdding && (
-            <RowForm
-              draft={draft}
-              setDraft={setDraft}
-              onSave={handleAdd}
-              onCancel={() => {
-                setIsAdding(false);
-                setDraft(emptyDraft);
-              }}
-              saveLabel="Add"
-              termPlaceholder="Term (e.g., jv)"
-              expansionPlaceholder="Expansion (e.g., Apr/Oct)"
-            />
+            <div className="flex flex-col gap-2">
+              {teachPhrase && (
+                <p className="text-xs text-mid-gray">
+                  Heard: <span className="font-mono">“{teachPhrase}”</span> —
+                  teach the word FlowTrade missed.
+                </p>
+              )}
+              <label className="text-xs text-mid-gray flex flex-col gap-1">
+                This word means
+                <select
+                  value={meansId}
+                  onChange={(e) => setMeansId(e.target.value)}
+                  className="px-2 py-1 text-sm font-semibold bg-mid-gray/10 border border-mid-gray/80 rounded-md hover:border-logo-primary focus:outline-none focus:border-logo-primary"
+                >
+                  <option value="">— a brand-new entry —</option>
+                  {teachTargets.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.term} — {e.expansion} ({e.token_class})
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {meansId === "" ? (
+                <RowForm
+                  draft={draft}
+                  setDraft={setDraft}
+                  onSave={handleAdd}
+                  onCancel={resetAddForm}
+                  saveLabel="Add"
+                  termPlaceholder="Term (e.g., jv)"
+                  expansionPlaceholder="Expansion (e.g., Apr/Oct)"
+                />
+              ) : (
+                <div className="border border-mid-gray/20 rounded-lg p-3 flex flex-col gap-2 bg-mid-gray/5">
+                  <Input
+                    type="text"
+                    value={aliasWord}
+                    onChange={(e) => setAliasWord(e.target.value)}
+                    placeholder="The word you say (e.g., wobble)"
+                    variant="compact"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button onClick={resetAddForm} variant="secondary" size="sm">
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveAlias}
+                      disabled={!aliasWord.trim()}
+                      variant="primary"
+                      size="sm"
+                    >
+                      Add word
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="overflow-x-auto">
