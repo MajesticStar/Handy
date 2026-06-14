@@ -194,7 +194,16 @@ const RowForm: React.FC<RowFormProps> = ({
   </div>
 );
 
-export const VocabularySettings: React.FC = () => {
+interface VocabularySettingsProps {
+  // A phrase routed from the panel's "teach a word" near-miss. When set, the
+  // add form opens with this phrase shown as a reference so the trader can add
+  // the word FlowTrade missed.
+  teachPhrase?: string | null;
+}
+
+export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
+  teachPhrase,
+}) => {
   const [additions, setAdditions] = useState<LexiconEntry[]>(liveAdditions);
   const [sessionDeletions, setSessionDeletions] = useState<Set<string>>(
     liveSessionDeletions,
@@ -213,6 +222,16 @@ export const VocabularySettings: React.FC = () => {
       setAdditions(loaded);
     });
   }, []);
+
+  // Arriving here from the panel's "teach a word" near-miss: open the add form
+  // ready (the spoken phrase is shown as a reference below).
+  useEffect(() => {
+    if (teachPhrase) {
+      setIsAdding(true);
+      setDraft(emptyDraft);
+      cancelEdit();
+    }
+  }, [teachPhrase]);
 
   const commitAdditions = async (next: LexiconEntry[]) => {
     liveAdditions = next;
@@ -380,6 +399,13 @@ export const VocabularySettings: React.FC = () => {
                 </Button>
               </div>
             </div>
+          )}
+
+          {isAdding && teachPhrase && (
+            <p className="text-xs text-mid-gray">
+              Heard: <span className="font-mono">“{teachPhrase}”</span> — add the
+              word FlowTrade missed.
+            </p>
           )}
 
           {isAdding && (

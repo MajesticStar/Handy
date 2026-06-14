@@ -53,6 +53,30 @@ export function isQuote(
   return !!r && "raw" in r;
 }
 
+// Did the trader probably ATTEMPT a quote we couldn't read? Used only to decide
+// whether to offer a "teach a word" prompt on a near-miss — never to change
+// recognition. Conservative on purpose (a recognizable month AND a number) so
+// the panel never pops up on ordinary dictation. Defined after MONTHS below.
+export function looksLikeQuoteAttempt(input: string): boolean {
+  if (!input || !input.trim()) return false;
+  const toks = input
+    .trim()
+    .toLowerCase()
+    .replace(/[,;]/g, " ")
+    .split(/\s+/)
+    .map((t) => t.replace(/[.,;:!?]+$/, ""))
+    .filter(Boolean);
+  let hasMonth = false;
+  let hasNumber = false;
+  for (const t of toks) {
+    if (MONTHS[t] || MONTH_NAMES[t]) hasMonth = true;
+    const my = t.match(/^([a-z]+)(\d+)$/); // month glued to digits (z25, dec25)
+    if (my && (MONTHS[my[1]] || MONTH_NAMES[my[1]])) hasMonth = true;
+    if (/\d/.test(t)) hasNumber = true;
+  }
+  return hasMonth && hasNumber;
+}
+
 // ---------------------------------------------------------------------------
 // Reference data
 // ---------------------------------------------------------------------------
@@ -116,7 +140,10 @@ type LexEntry = {
   token_class: string;
   notes?: string;
 };
-const LEX = lexiconSeed as LexEntry[];
+const SEED_LEX = lexiconSeed as LexEntry[];
+// Active lexicon = seed plus whatever the trader added/edited in the
+// Vocabulary tab (applied by the caller via setUserLexicon). Seed-only by default.
+let LEX: LexEntry[] = SEED_LEX;
 
 function buildMap(cls: string): Map<string, LexEntry> {
   const m = new Map<string, LexEntry>();
@@ -127,10 +154,27 @@ function buildMap(cls: string): Map<string, LexEntry> {
   }
   return m;
 }
-const PRODUCTS = buildMap("product");
-const STRATEGIES = buildMap("strategy");
-const VENUES = buildMap("venue");
-const SIDES = buildMap("side");
+let PRODUCTS = buildMap("product");
+let STRATEGIES = buildMap("strategy");
+let VENUES = buildMap("venue");
+let SIDES = buildMap("side");
+
+// Fold the trader's Vocabulary-tab entries into the active lexicon. A user
+// entry whose id matches a seed entry overrides it (the same rule the
+// Vocabulary tab displays); a new id extends the lexicon. Pass [] to return to
+// seed-only. Only product / strategy / side / venue classes affect recognition
+// — tenor and qualifier additions are stored but ignored here (months are
+// fixed reference data; there is no qualifier lookup).
+export function setUserLexicon(additions: LexEntry[]): void {
+  const byId = new Map<string, LexEntry>();
+  for (const e of SEED_LEX) byId.set(e.id, e);
+  for (const e of additions || []) byId.set(e.id, e);
+  LEX = [...byId.values()];
+  PRODUCTS = buildMap("product");
+  STRATEGIES = buildMap("strategy");
+  VENUES = buildMap("venue");
+  SIDES = buildMap("side");
+}
 
 const P2A = (productSpecs as any).product_to_asset_class as Record<
   string,

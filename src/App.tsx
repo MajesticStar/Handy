@@ -13,6 +13,7 @@ import AccessibilityPermissions from "./components/AccessibilityPermissions";
 import Footer from "./components/footer";
 import Onboarding, { AccessibilityOnboarding } from "./components/onboarding";
 import { Sidebar, SidebarSection, SECTIONS_CONFIG } from "./components/Sidebar";
+import { VocabularySettings } from "./components/settings";
 import { useSettings } from "./hooks/useSettings";
 import { useSettingsStore } from "./stores/settingsStore";
 import { commands } from "@/bindings";
@@ -20,7 +21,15 @@ import { getLanguageDirection, initializeRTL } from "@/lib/utils/rtl";
 
 type OnboardingStep = "accessibility" | "model" | "done";
 
-const renderSettingsContent = (section: SidebarSection) => {
+const renderSettingsContent = (
+  section: SidebarSection,
+  teachPhrase: string | null,
+) => {
+  // The Vocabulary tab takes the "teach a word" phrase from a near-miss so it
+  // can open the add form ready (the panel's teach button routes here).
+  if (section === "vocabulary") {
+    return <VocabularySettings teachPhrase={teachPhrase} />;
+  }
   const ActiveComponent =
     SECTIONS_CONFIG[section]?.component || SECTIONS_CONFIG.general.component;
   return <ActiveComponent />;
@@ -36,6 +45,9 @@ function App() {
   const [isReturningUser, setIsReturningUser] = useState(false);
   const [currentSection, setCurrentSection] =
     useState<SidebarSection>("general");
+  // Phrase carried over from a panel "teach a word" near-miss, handed to the
+  // Vocabulary tab so it opens the add form ready.
+  const [teachPhrase, setTeachPhrase] = useState<string | null>(null);
   const { settings, updateSetting } = useSettings();
   const direction = getLanguageDirection(i18n.language);
   const refreshAudioDevices = useSettingsStore(
@@ -94,6 +106,17 @@ function App() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [settings?.debug_mode, updateSetting]);
+
+  // Panel "teach a word" near-miss: jump to the Vocabulary tab with the phrase.
+  useEffect(() => {
+    const unlisten = listen<string>("flowtrade-teach-word", (event) => {
+      setTeachPhrase(event.payload);
+      setCurrentSection("vocabulary");
+    });
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   // Listen for recording errors from the backend and show a toast
   useEffect(() => {
@@ -275,7 +298,7 @@ function App() {
           <div className="flex-1 overflow-y-auto">
             <div className="flex flex-col items-center p-4 gap-4">
               <AccessibilityPermissions />
-              {renderSettingsContent(currentSection)}
+              {renderSettingsContent(currentSection, teachPhrase)}
             </div>
           </div>
         </div>

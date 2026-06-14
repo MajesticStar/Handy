@@ -17,7 +17,11 @@
 //  - "trades" etc. = trade print (renders red in ICE Chat, kept in raw)
 
 import { test, expect } from "bun:test";
-import { recognize } from "./recognizer";
+import {
+  recognize,
+  setUserLexicon,
+  looksLikeQuoteAttempt,
+} from "./recognizer";
 
 // ---- the six demo cells -----------------------------------------------------
 
@@ -287,4 +291,50 @@ test("spoken NG quote — glued premium pair splits (6164 -> .061/.064)", () => 
 test("no match — ordinary speech falls through", () => {
   expect(recognize("the weather is nice today")).toBeNull();
   expect(recognize("")).toBeNull();
+});
+
+// ---- Vocabulary-tab wiring --------------------------------------------------
+// A word the trader adds in the Vocabulary tab must actually change recognition
+// (the gap disclosed 2026-06-12), and clearing it must return to seed behaviour.
+// Kept last so the module-state reset can't affect the other fixtures.
+
+test("user lexicon: a trader-added strategy word is recognized, then cleared", () => {
+  // "kite" is not in the seed — without the addition this can't be a quote
+  expect(recognize("K 3.25/4 kite x2.95 61/64")).toBeNull();
+
+  setUserLexicon([
+    {
+      id: "kite",
+      term: "kite",
+      aliases: [],
+      expansion: "call spread",
+      token_class: "strategy",
+    },
+  ]);
+  const r = recognize("K 3.25/4 kite x2.95 61/64");
+  expect(r).not.toBeNull();
+  expect(r!.shape).toBe("options");
+  expect(r!.raw).toBe("K 3.25/4 kite x2.95 .061/.064");
+
+  // clearing returns to seed-only behaviour
+  setUserLexicon([]);
+  expect(recognize("K 3.25/4 kite x2.95 61/64")).toBeNull();
+});
+
+// ---- near-miss detection (the "teach a word" prompt trigger) ----------------
+// Fires only on a real quote attempt (a month + a number) so the panel never
+// pops up on ordinary speech.
+
+test("near-miss: a mis-heard quote (month + numbers) is flagged for teaching", () => {
+  // recognizer can't read it (unknown strategy word), but it's clearly a quote
+  expect(recognize("K 3.25/4 kite x2.95 61/64")).toBeNull();
+  expect(looksLikeQuoteAttempt("K 3.25/4 kite x2.95 61/64")).toBe(true);
+  expect(looksLikeQuoteAttempt("december 25 wti something 62 50")).toBe(true);
+});
+
+test("near-miss: ordinary speech is NOT flagged", () => {
+  expect(looksLikeQuoteAttempt("the weather is nice today")).toBe(false);
+  expect(looksLikeQuoteAttempt("call me back in 5 minutes")).toBe(false); // number, no month
+  expect(looksLikeQuoteAttempt("see you in december")).toBe(false); // month, no number
+  expect(looksLikeQuoteAttempt("")).toBe(false);
 });
