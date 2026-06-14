@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BookOpen, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BookOpen, Pencil, Plus, RotateCcw, X } from "lucide-react";
 import {
   BaseDirectory,
   exists,
@@ -218,6 +218,8 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  // Table sort: alphabetical by Expansion, toggleable ascending/descending.
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     if (hasLoadedFromDisk) return;
@@ -379,6 +381,10 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   };
 
   const displayed = computeDisplayed(additions, sessionDeletions);
+  const sortedDisplayed = [...displayed].sort((a, b) => {
+    const c = a.expansion.localeCompare(b.expansion);
+    return sortDir === "asc" ? c : -c;
+  });
   const trueAdditionsCount = additions.filter(
     (a) => !SEED_IDS.has(a.id),
   ).length;
@@ -527,14 +533,29 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
               <thead>
                 <tr className="border-b border-mid-gray/20 text-xs text-mid-gray uppercase tracking-wide">
                   <th className="text-left py-2 pr-3 font-medium">Term</th>
-                  <th className="text-left py-2 pr-3 font-medium">Expansion</th>
+                  <th className="text-left py-2 pr-3 font-medium">
+                    <button
+                      onClick={() =>
+                        setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+                      }
+                      className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-logo-primary transition-colors cursor-pointer"
+                      title="Sort by expansion"
+                    >
+                      Expansion
+                      {sortDir === "asc" ? (
+                        <ArrowUp className="w-3 h-3" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </th>
                   <th className="text-left py-2 pr-3 font-medium">Class</th>
                   <th className="text-left py-2 pr-3 font-medium">Aliases</th>
                   <th className="py-2 w-16" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-mid-gray/10">
-                {displayed.map((entry) =>
+                {sortedDisplayed.map((entry) =>
                   editingId === entry.id ? (
                     <tr key={entry.id} className="bg-mid-gray/5">
                       <td colSpan={5} className="p-3">
