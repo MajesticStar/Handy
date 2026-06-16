@@ -599,7 +599,7 @@
   },
   "appLanguage": {
     "title": "Application Language",
-    "description": "Change the language of the Handy interface"
+    "description": "Change the language of the FlowTrade interface"
   },
   "overlay": {
     "transcribing": "Transcribing...",
