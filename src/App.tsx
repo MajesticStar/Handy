@@ -12,8 +12,15 @@ import "./App.css";
 import AccessibilityPermissions from "./components/AccessibilityPermissions";
 import Footer from "./components/footer";
 import Onboarding, { AccessibilityOnboarding } from "./components/onboarding";
-import { Sidebar, SidebarSection, SECTIONS_CONFIG } from "./components/Sidebar";
-import { VocabularySettings } from "./components/settings";
+import { Sidebar, HubItem } from "./components/Sidebar";
+import { VocabularySettings, HistorySettings } from "./components/settings";
+import { SettingsPage } from "./components/SettingsPage";
+import {
+  HomePage,
+  TransformsPage,
+  SnippetsPage,
+  VoiceCommandsPage,
+} from "./components/hub/HubPages";
 import { useSettings } from "./hooks/useSettings";
 import { useSettingsStore } from "./stores/settingsStore";
 import { commands } from "@/bindings";
@@ -21,18 +28,25 @@ import { getLanguageDirection, initializeRTL } from "@/lib/utils/rtl";
 
 type OnboardingStep = "accessibility" | "model" | "done";
 
-const renderSettingsContent = (
-  section: SidebarSection,
-  teachPhrase: string | null,
-) => {
-  // The Vocabulary tab takes the "teach a word" phrase from a near-miss so it
-  // can open the add form ready (the panel's teach button routes here).
-  if (section === "vocabulary") {
-    return <VocabularySettings teachPhrase={teachPhrase} />;
+const renderHubContent = (item: HubItem, teachPhrase: string | null) => {
+  switch (item) {
+    case "home":
+      return <HomePage />;
+    case "transforms":
+      return <TransformsPage />;
+    case "dictionary":
+      // The Dictionary tab takes the "teach a word" phrase from a near-miss so
+      // it can open the add form ready (the panel's teach button routes here).
+      return <VocabularySettings teachPhrase={teachPhrase} />;
+    case "snippets":
+      return <SnippetsPage />;
+    case "voicecommands":
+      return <VoiceCommandsPage />;
+    case "journal":
+      return <HistorySettings />;
+    case "settings":
+      return <SettingsPage />;
   }
-  const ActiveComponent =
-    SECTIONS_CONFIG[section]?.component || SECTIONS_CONFIG.general.component;
-  return <ActiveComponent />;
 };
 
 function App() {
@@ -43,8 +57,7 @@ function App() {
   // Track if this is a returning user who just needs to grant permissions
   // (vs a new user who needs full onboarding including model selection)
   const [isReturningUser, setIsReturningUser] = useState(false);
-  const [currentSection, setCurrentSection] =
-    useState<SidebarSection>("general");
+  const [currentItem, setCurrentItem] = useState<HubItem>("home");
   // Phrase carried over from a panel "teach a word" near-miss, handed to the
   // Vocabulary tab so it opens the add form ready.
   const [teachPhrase, setTeachPhrase] = useState<string | null>(null);
@@ -111,7 +124,7 @@ function App() {
   useEffect(() => {
     const unlisten = listen<string>("flowtrade-teach-word", (event) => {
       setTeachPhrase(event.payload);
-      setCurrentSection("vocabulary");
+      setCurrentItem("dictionary");
     });
     return () => {
       unlisten.then((fn) => fn());
@@ -289,16 +302,13 @@ function App() {
       />
       {/* Main content area that takes remaining space */}
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar
-          activeSection={currentSection}
-          onSectionChange={setCurrentSection}
-        />
+        <Sidebar activeItem={currentItem} onItemChange={setCurrentItem} />
         {/* Scrollable content area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
             <div className="flex flex-col items-center p-4 gap-4">
               <AccessibilityPermissions />
-              {renderSettingsContent(currentSection, teachPhrase)}
+              {renderHubContent(currentItem, teachPhrase)}
             </div>
           </div>
         </div>

@@ -11,12 +11,23 @@
   "sidebar": {
     "general": "General",
     "models": "Models",
-    "vocabulary": "Vocabulary",
     "advanced": "Advanced",
     "postProcessing": "Post Process",
-    "history": "History",
     "debug": "Debug",
     "about": "About"
+  },
+  "hub": {
+    "home": "Home",
+    "transforms": "Transforms",
+    "dictionary": "Dictionary",
+    "snippets": "Snippets",
+    "voiceCommands": "Voice Commands",
+    "journal": "Trading Journal",
+    "settings": "Settings",
+    "sections": {
+      "voice": "Voice",
+      "record": "Record"
+    }
   },
   "onboarding": {
     "subtitle": "To get started, choose a transcription model",
