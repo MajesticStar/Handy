@@ -100,28 +100,15 @@ interface HubItemConfig {
   icon: React.ComponentType<IconProps>;
 }
 
-interface HubGroup {
-  labelKey?: string; // section heading; omitted for the lead item (Home)
-  items: HubItemConfig[];
-}
-
-// Home (no heading), then VOICE, then RECORD. Settings is pinned separately at
-// the bottom of the component, so it is not part of this list.
-const HUB_GROUPS: HubGroup[] = [
-  { items: [{ id: "home", labelKey: "hub.home", icon: Home }] },
-  {
-    labelKey: "hub.sections.voice",
-    items: [
-      { id: "transforms", labelKey: "hub.transforms", icon: Sparkles },
-      { id: "dictionary", labelKey: "hub.dictionary", icon: BookOpen },
-      { id: "snippets", labelKey: "hub.snippets", icon: Bookmark },
-      { id: "voicecommands", labelKey: "hub.voiceCommands", icon: Mic },
-    ],
-  },
-  {
-    labelKey: "hub.sections.record",
-    items: [{ id: "journal", labelKey: "hub.journal", icon: ClipboardList }],
-  },
+// Flat list of hub nav items. Settings is pinned separately at the bottom of
+// the component and is not part of this array.
+const HUB_ITEMS: HubItemConfig[] = [
+  { id: "home", labelKey: "hub.home", icon: Home },
+  { id: "transforms", labelKey: "hub.transforms", icon: Sparkles },
+  { id: "dictionary", labelKey: "hub.dictionary", icon: BookOpen },
+  { id: "snippets", labelKey: "hub.snippets", icon: Bookmark },
+  { id: "voicecommands", labelKey: "hub.voiceCommands", icon: Mic },
+  { id: "journal", labelKey: "hub.journal", icon: ClipboardList },
 ];
 
 const SETTINGS_HUB_ITEM: HubItemConfig = {
@@ -169,16 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div className="flex flex-col w-44 h-full border-e border-mid-gray/20 px-2">
       <FlowTradeTextLogo className="m-4 text-2xl self-center" />
       <div className="flex flex-col w-full gap-1 pt-2 border-t border-mid-gray/20 overflow-y-auto flex-1">
-        {HUB_GROUPS.map((group, groupIndex) => (
-          <div key={groupIndex} className="flex flex-col w-full gap-1">
-            {group.labelKey && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-mid-gray/60 px-2 pt-3 pb-1">
-                {t(group.labelKey)}
-              </p>
-            )}
-            {group.items.map(renderItem)}
-          </div>
-        ))}
+        {HUB_ITEMS.map(renderItem)}
       </div>
       <div className="w-full pt-2 pb-2 border-t border-mid-gray/20">
         {renderItem(SETTINGS_HUB_ITEM)}

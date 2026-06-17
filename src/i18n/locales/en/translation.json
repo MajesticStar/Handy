@@ -23,11 +23,7 @@
     "snippets": "Snippets",
     "voiceCommands": "Voice Commands",
     "journal": "Trading Journal",
-    "settings": "Settings",
-    "sections": {
-      "voice": "Voice",
-      "record": "Record"
-    }
+    "settings": "Settings"
   },
   "onboarding": {
     "subtitle": "To get started, choose a transcription model",
