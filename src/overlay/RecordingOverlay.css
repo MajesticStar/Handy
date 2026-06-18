@@ -1,3 +1,11 @@
+/* This overlay is a separate webview that does not import the app theme
+   (@theme lives in App.css, main webview only). Define the accent token
+   locally so var(--color-logo-primary) resolves here too. Keep in sync with
+   App.css. */
+:root {
+  --color-logo-primary: #ffb23e;
+}
+
 .recording-overlay {
   height: 36px;
   width: 172px;
@@ -86,7 +94,7 @@
 }
 
 .cancel-button:hover {
-  background: #faa2ca33;
+  background: color-mix(in srgb, var(--color-logo-primary) 20%, transparent);
   transform: scale(1.05);
 }
 
