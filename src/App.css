@@ -6,12 +6,14 @@
   --color-background: #070708;
   --color-background-ui: #ffb23e;   /* filled controls (primary button, toggle, slider) = the accent */
   --color-accent-fg: #0a0a0a;       /* text/icons ON amber (contrast) */
-  --color-logo-primary: #ffb23e;    /* brand accent — 84 usages follow this */
+  --color-logo-primary: #ffb23e;    /* brand accent — matches background-ui; drives accent utilities */
   --color-logo-stroke: #382731;     /* legacy Handy SVG only (onboarding) */
   --color-text-stroke: #1a1a1e;     /* legacy .text-stroke utility (unused on FlowTrade surfaces) */
   --color-mid-gray: #8a8a93;        /* neutral / muted text + translucent surfaces/borders */
   --color-surface: #16161a;         /* card/surface (Tailwind v4 auto-makes bg-surface) */
   --color-border: #232328;          /* hairline border (auto-makes border-border) */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
 }
 
 :root {
@@ -19,13 +21,7 @@
   font-size: 15px;
   line-height: 24px;
   font-weight: 400;
-
-  /* Colors - Light Theme */
-  /* --color-text: #0f0f0f;
-  --color-background: #fbfbfb;
-  --color-logo-primary: #FAA2CA;
-  --color-logo-stroke: #382731;
-  --color-text-stroke: #f6f6f6; */
+  font-family: var(--font-sans);
 
   /* Typography settings */
   font-synthesis: none;
