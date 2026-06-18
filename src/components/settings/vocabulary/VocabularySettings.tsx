@@ -106,6 +106,22 @@ function computeDisplayed(
   return [...trueAdditions, ...seedDisplayed];
 }
 
+const EntryRow: React.FC<{
+  entry: LexiconEntry;
+  onEdit: (e: LexiconEntry) => void;
+  onDelete: (id: string) => void;
+}> = ({ entry, onEdit, onDelete }) => (
+  <div className="group grid grid-cols-[120px_1fr_1.2fr_auto] gap-3 items-center py-2 border-t border-border first:border-t-0 text-sm">
+    <span className="font-mono text-logo-primary">{entry.term}</span>
+    <span className="text-text">{entry.expansion}</span>
+    <span className="text-mid-gray text-xs">{entry.aliases.join(", ")}</span>
+    <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <button onClick={() => onEdit(entry)} aria-label={`Edit ${entry.term}`} className="text-mid-gray hover:text-logo-primary cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
+      <button onClick={() => onDelete(entry.id)} aria-label={`Delete ${entry.term}`} className="text-mid-gray hover:text-red-500 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+    </span>
+  </div>
+);
+
 interface RowFormProps {
   draft: Draft;
   setDraft: (d: Draft) => void;
@@ -431,221 +447,161 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
     );
 
   return (
-    <div className="max-w-3xl w-full mx-auto space-y-6">
-      <SettingsGroup title="Vocabulary">
-        <div className="p-4 space-y-3">
-          <div className="flex justify-between items-center">
-            <p className="text-xs text-mid-gray flex items-center gap-2">
-              <BookOpen className="w-3.5 h-3.5" />
-              {displayed.length} entries shown
-              {hasChanges && (
-                <span className="text-mid-gray/70">
-                  {" "}
-                  · {trueAdditionsCount} added · {overrideCount} edited
-                </span>
-              )}
-            </p>
-            <div className="flex gap-2">
-              {hasChanges && (
-                <Button
-                  onClick={() => setShowResetConfirm(true)}
-                  variant="secondary"
-                  size="sm"
-                  className="inline-flex items-center gap-1"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Reset to defaults
-                </Button>
-              )}
-              <Button
-                onClick={() => {
-                  if (isAdding) resetAddForm();
-                  else setIsAdding(true);
-                  cancelEdit();
-                }}
-                variant="primary"
-                size="sm"
-                className="inline-flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Add entry
-              </Button>
-            </div>
+    <div className="max-w-4xl w-full mx-auto pb-10">
+      {/* HEADER */}
+      <h2 className="text-2xl font-bold tracking-tight">Dictionary</h2>
+      <p className="mt-1 mb-5 text-sm text-mid-gray max-w-2xl">
+        The building blocks of how you speak a market, in spoken order. You teach the{" "}
+        <span className="text-logo-primary">words</span>; the engine works out the numbers.
+      </p>
+
+      {/* MARKET TABS */}
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        {([
+          { k: "all", label: "All" },
+          { k: "ng", label: "Natural Gas" },
+          { k: "oil", label: "Crude (WTI)" },
+        ] as { k: Market; label: string }[]).map((t) => (
+          <button
+            key={t.k}
+            onClick={() => setMarket(t.k)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
+              market === t.k
+                ? "border-logo-primary/40 bg-logo-primary/10 text-logo-primary"
+                : "border-border text-mid-gray hover:border-mid-gray/60"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setMarket("btc")}
+          className={`text-xs px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${
+            market === "btc" ? "border-logo-primary/40 bg-logo-primary/10 text-logo-primary" : "border-border text-mid-gray/60 hover:border-mid-gray/60"
+          }`}
+        >
+          Bitcoin · OTC <span className="text-[0.6rem]">(example)</span>
+        </button>
+        <button
+          onClick={() => toast.success("Adding a new market type is on the FlowTrade roadmap.")}
+          className="text-xs px-3 py-1.5 rounded-full border border-dashed border-border text-mid-gray/60 hover:border-mid-gray/60 cursor-pointer"
+        >
+          + Add market
+        </button>
+      </div>
+
+      {/* ANATOMY STRIP — inserted in Task 4 (placeholder comment for now) */}
+      {/* ANATOMY_STRIP */}
+
+      {/* TEST-IT BOX — inserted in Task 4 (placeholder comment for now) */}
+      {/* TEST_IT_BOX */}
+
+      {/* RESET CONFIRM */}
+      {showResetConfirm && (
+        <div className="mb-4 border border-red-500/30 rounded-lg p-3 bg-red-500/5 flex items-center justify-between gap-3">
+          <p className="text-sm">
+            Reset will remove your {trueAdditionsCount} added and{" "}
+            {overrideCount} edited entries. Continue?
+          </p>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowResetConfirm(false)}
+              variant="secondary"
+              size="sm"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleReset} variant="danger" size="sm">
+              Reset
+            </Button>
           </div>
+        </div>
+      )}
 
-          {showResetConfirm && (
-            <div className="border border-red-500/30 rounded-lg p-3 bg-red-500/5 flex items-center justify-between gap-3">
-              <p className="text-sm">
-                Reset will remove your {trueAdditionsCount} added and{" "}
-                {overrideCount} edited entries. Continue?
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setShowResetConfirm(false)}
-                  variant="secondary"
-                  size="sm"
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleReset} variant="danger" size="sm">
-                  Reset
-                </Button>
+      {/* BTC illustrative note */}
+      {market === "btc" && (
+        <div className="mb-4 rounded-xl border border-dashed border-border bg-surface px-4 py-3 text-sm text-mid-gray">
+          FlowTrade isn't limited to gas &amp; oil. Bitcoin · OTC is shown as an example of an
+          off-exchange market negotiated on messaging apps — the words live here, the number
+          conventions are on the roadmap.
+        </div>
+      )}
+
+      {/* COLUMN HEADER */}
+      <div className="grid grid-cols-[120px_1fr_1.2fr_auto] gap-3 px-4 pb-1.5 text-[0.66rem] uppercase tracking-wider text-mid-gray/70">
+        <span>Term</span>
+        <span>Means</span>
+        <span>Also heard as</span>
+        <span />
+      </div>
+
+      {/* VOCABULARY BY ROLE */}
+      <div className="space-y-2.5">
+        {sections.map((sec) => {
+          const open = openRoles.has(sec.key);
+          return (
+            <div key={sec.key} id={`role-${sec.key}`} className="rounded-xl border border-border overflow-hidden">
+              <div className="flex items-center gap-2.5 px-4 py-3 bg-surface">
+                <button onClick={() => toggleRole(sec.key)} className="flex items-center gap-2.5 flex-1 text-left cursor-pointer">
+                  {open ? <ChevronDown className="w-4 h-4 text-mid-gray" /> : <ChevronRight className="w-4 h-4 text-mid-gray" />}
+                  <span className="font-semibold text-sm">{sec.label}</span>
+                  <span className="text-xs text-mid-gray/70">· {sec.count} terms</span>
+                </button>
+                <button onClick={() => openAddInRole(sec.key)} className="inline-flex items-center gap-1 text-xs text-logo-primary hover:opacity-80 cursor-pointer">
+                  <Plus className="w-3 h-3" /> Add word
+                </button>
               </div>
-            </div>
-          )}
 
-          {isAdding && (
-            <div className="flex flex-col gap-2">
-              {teachPhrase && (
-                <p className="text-xs text-mid-gray">
-                  Heard: <span className="font-mono">“{teachPhrase}”</span> —
-                  teach the word FlowTrade missed.
-                </p>
-              )}
-              <label className="text-xs text-mid-gray flex flex-col gap-1">
-                This word means
-                <select
-                  value={meansId}
-                  onChange={(e) => setMeansId(e.target.value)}
-                  className="px-2 py-1 text-sm font-semibold bg-mid-gray/10 border border-mid-gray/80 rounded-md hover:border-logo-primary focus:outline-none focus:border-logo-primary"
-                >
-                  <option value="">— a brand-new entry —</option>
-                  {teachTargets.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.term} — {e.expansion} ({e.token_class})
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {meansId === "" ? (
-                <RowForm
-                  draft={draft}
-                  setDraft={setDraft}
-                  onSave={handleAdd}
-                  onCancel={resetAddForm}
-                  saveLabel="Add"
-                  termPlaceholder="Term (e.g., jv)"
-                  expansionPlaceholder="Expansion (e.g., Apr/Oct)"
-                />
-              ) : (
-                <div className="border border-mid-gray/20 rounded-lg p-3 flex flex-col gap-2 bg-mid-gray/5">
-                  <Input
-                    type="text"
-                    value={aliasWord}
-                    onChange={(e) => setAliasWord(e.target.value)}
-                    placeholder="The word you say (e.g., wobble)"
-                    variant="compact"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button onClick={resetAddForm} variant="secondary" size="sm">
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSaveAlias}
-                      disabled={!aliasWord.trim()}
-                      variant="primary"
-                      size="sm"
-                    >
-                      Add word
-                    </Button>
-                  </div>
+              {open && (
+                <div className="px-4 pb-3 pt-1">
+                  {addingRole === sec.key && (
+                    <div className="py-2">
+                      {sec.key === "product" && /* teachPhrase reference, if arriving from a near-miss */ null}
+                      <RowForm
+                        draft={draft}
+                        setDraft={setDraft}
+                        onSave={() => { handleAdd(); setAddingRole(null); }}
+                        onCancel={resetAddForm}
+                        saveLabel="Add word"
+                      />
+                    </div>
+                  )}
+                  {sec.entries.map((entry) =>
+                    editingId === entry.id ? (
+                      <div key={entry.id} className="py-2">
+                        <RowForm draft={editDraft} setDraft={setEditDraft} onSave={handleSaveEdit} onCancel={cancelEdit} saveLabel="Save" />
+                      </div>
+                    ) : (
+                      <EntryRow key={entry.id} entry={entry} onEdit={handleStartEdit} onDelete={handleDelete} />
+                    ),
+                  )}
+                  {sec.entries.length === 0 && addingRole !== sec.key && (
+                    <p className="py-3 text-xs text-mid-gray">
+                      {market === "btc" && sec.key === "product"
+                        ? "No Bitcoin vocabulary yet — illustrative tab."
+                        : "Nothing here yet."}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          );
+        })}
+      </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-mid-gray/20 text-xs text-mid-gray uppercase tracking-wide">
-                  {(
-                    [
-                      { key: "term" as SortKey, label: "Term" },
-                      { key: "expansion" as SortKey, label: "Expansion" },
-                      { key: "token_class" as SortKey, label: "Class" },
-                      { key: "aliases" as SortKey, label: "Aliases" },
-                    ] as { key: SortKey; label: string }[]
-                  ).map(({ key, label }) => (
-                    <th key={key} className="text-left py-2 pr-3 font-medium">
-                      <button
-                        onClick={() => handleSortClick(key)}
-                        className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-logo-primary transition-colors cursor-pointer"
-                        title={`Sort by ${label.toLowerCase()}`}
-                      >
-                        {label}
-                        {sortKey === key ? (
-                          sortDir === "asc" ? (
-                            <ArrowUp className="w-3 h-3" />
-                          ) : (
-                            <ArrowDown className="w-3 h-3" />
-                          )
-                        ) : null}
-                      </button>
-                    </th>
-                  ))}
-                  <th className="py-2 w-16" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-mid-gray/10">
-                {sortedDisplayed.map((entry) =>
-                  editingId === entry.id ? (
-                    <tr key={entry.id} className="bg-mid-gray/5">
-                      <td colSpan={5} className="p-3">
-                        <RowForm
-                          draft={editDraft}
-                          setDraft={setEditDraft}
-                          onSave={handleSaveEdit}
-                          onCancel={cancelEdit}
-                          saveLabel="Save"
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr key={entry.id}>
-                      <td className="py-2 pr-3 font-mono">{entry.term}</td>
-                      <td className="py-2 pr-3">{entry.expansion}</td>
-                      <td className="py-2 pr-3 text-mid-gray">
-                        {entry.token_class}
-                      </td>
-                      <td className="py-2 pr-3">
-                        <div className="flex flex-wrap gap-1">
-                          {entry.aliases.map((a) => (
-                            <span
-                              key={a}
-                              className="px-1.5 py-0.5 rounded bg-mid-gray/10 text-xs font-mono"
-                            >
-                              {a}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-2">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleStartEdit(entry)}
-                            className="text-mid-gray hover:text-logo-primary transition-colors cursor-pointer"
-                            aria-label={`Edit ${entry.term}`}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(entry.id)}
-                            className="text-mid-gray hover:text-red-500 transition-colors cursor-pointer"
-                            aria-label={`Delete ${entry.term}`}
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ),
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </SettingsGroup>
+      {/* FOOTER: reset / teach reference */}
+      <div className="mt-5 flex items-center gap-3 text-xs text-mid-gray">
+        {teachPhrase && (
+          <span>
+            Heard: <span className="font-mono">"{teachPhrase}"</span> — teach the word FlowTrade missed (added under Product).
+          </span>
+        )}
+        {hasChanges && (
+          <Button onClick={() => setShowResetConfirm(true)} variant="secondary" size="sm" className="ml-auto inline-flex items-center gap-1">
+            <RotateCcw className="w-3 h-3" /> Reset to defaults
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
