@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* Design tokens */
-  --color-text: #0f0f0f;
-  --color-background: #fbfbfb;
-  --color-background-ui: #da5893;
-  --color-logo-primary: #faa2ca;
-  --color-logo-stroke: #382731;
-  --color-text-stroke: #f6f6f6;
-  --color-mid-gray: #808080;
+  /* FlowTrade — Terminal Amber, dark-first. Single accent drives the app. */
+  --color-text: #e8e8ea;
+  --color-background: #070708;
+  --color-background-ui: #ffb23e;   /* filled controls (primary button, toggle, slider) = the accent */
+  --color-accent-fg: #0a0a0a;       /* text/icons ON amber (contrast) */
+  --color-logo-primary: #ffb23e;    /* brand accent — 84 usages follow this */
+  --color-logo-stroke: #382731;     /* legacy Handy SVG only (onboarding) */
+  --color-text-stroke: #1a1a1e;     /* legacy .text-stroke utility (unused on FlowTrade surfaces) */
+  --color-mid-gray: #8a8a93;        /* neutral / muted text + translucent surfaces/borders */
+  --color-surface: #16161a;         /* card/surface (Tailwind v4 auto-makes bg-surface) */
+  --color-border: #232328;          /* hairline border (auto-makes border-border) */
 }
 
 :root {
@@ -52,15 +55,6 @@
   text-align: center;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Colors - Dark Theme */
-    --color-text: #fbfbfb;
-    --color-background: #2c2b29;
-    --color-logo-primary: #f28cbb;
-    --color-logo-stroke: #fad1ed;
-  }
-}
 
 /* macOS - tint native overlay scrollbar thumb */
 :root[data-platform="macos"] {
