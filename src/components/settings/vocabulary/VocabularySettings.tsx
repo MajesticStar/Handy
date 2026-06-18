@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, BookOpen, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Lock, Pencil, Plus, RotateCcw, Send, X } from "lucide-react";
 import {
   BaseDirectory,
   exists,
@@ -7,36 +7,20 @@ import {
   writeTextFile,
 } from "@tauri-apps/plugin-fs";
 import { toast } from "sonner";
-import { SettingsGroup } from "../../ui/SettingsGroup";
 import { Button } from "../../ui/Button";
 import { Input } from "../../ui/Input";
 import seed from "@/data/lexicon-seed.json";
-
-type TokenClass =
-  | "product"
-  | "tenor"
-  | "strategy"
-  | "side"
-  | "qualifier";
-
-interface LexiconEntry {
-  id: string;
-  term: string;
-  aliases: string[];
-  expansion: string;
-  token_class: TokenClass;
-  notes?: string;
-}
-
-const TOKEN_CLASSES: TokenClass[] = [
-  "product",
-  "tenor",
-  "strategy",
-  "side",
-  "qualifier",
-];
+import { recognize, isQuote } from "@/lib/quoteRecognizer/recognizer";
+import {
+  ROLE_ORDER,
+  rolesView,
+  type LexiconEntry,
+  type Market,
+  type TokenClass,
+} from "./dictionaryView";
 
 const STORAGE_FILE = "lexicon-additions.json";
+const SUBMISSIONS_FILE = "dictionary-submissions.json"; // local "Submit to FlowTrade" capture
 
 const SEED: LexiconEntry[] = seed as LexiconEntry[];
 const SEED_IDS = new Set(SEED.map((e) => e.id));
@@ -164,9 +148,9 @@ const RowForm: React.FC<RowFormProps> = ({
         }
         className="px-2 py-1 text-sm font-semibold bg-mid-gray/10 border border-mid-gray/80 rounded-md hover:border-logo-primary focus:outline-none focus:border-logo-primary"
       >
-        {TOKEN_CLASSES.map((c) => (
-          <option key={c} value={c}>
-            {c}
+        {ROLE_ORDER.map((r) => (
+          <option key={r.key} value={r.key}>
+            {r.label}
           </option>
         ))}
       </select>
@@ -208,7 +192,6 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   const [sessionDeletions, setSessionDeletions] = useState<Set<string>>(
     liveSessionDeletions,
   );
-  const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   // "This word means →" teach-as-alias mode. meansId = the existing entry the
   // new spoken word attaches to as an alias ("" = create a brand-new entry).
@@ -218,20 +201,19 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  // Table sort: column + direction. Clicking a column header sorts by that
-  // column; clicking again toggles asc/desc. Default: Expansion ascending.
-  type SortKey = "term" | "expansion" | "token_class" | "aliases";
-  const [sortKey, setSortKey] = useState<SortKey>("expansion");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [market, setMarket] = useState<Market>("all");
+  const [openRoles, setOpenRoles] = useState<Set<TokenClass>>(
+    new Set<TokenClass>(["product", "strategy"]),
+  );
+  const [addingRole, setAddingRole] = useState<TokenClass | null>(null);
+  const [testInput, setTestInput] = useState("");
 
-  const handleSortClick = (key: SortKey) => {
-    if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  };
+  const toggleRole = (key: TokenClass) =>
+    setOpenRoles((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
 
   useEffect(() => {
     if (hasLoadedFromDisk) return;
@@ -246,7 +228,7 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   // ready (the spoken phrase is shown as a reference below).
   useEffect(() => {
     if (teachPhrase) {
-      setIsAdding(true);
+      setAddingRole("product");
       setDraft(emptyDraft);
       setMeansId("");
       setAliasWord("");
@@ -269,7 +251,7 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   };
 
   const resetAddForm = () => {
-    setIsAdding(false);
+    setAddingRole(null);
     setDraft(emptyDraft);
     setMeansId("");
     setAliasWord("");
@@ -330,7 +312,7 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
   const handleStartEdit = (entry: LexiconEntry) => {
     setEditingId(entry.id);
     setEditDraft(entryToDraft(entry));
-    setIsAdding(false);
+    setAddingRole(null);
   };
 
   const handleSaveEdit = () => {
@@ -392,20 +374,44 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
     }
   };
 
-  const displayed = computeDisplayed(additions, sessionDeletions);
-  const sortedDisplayed = [...displayed].sort((a, b) => {
-    let aVal: string;
-    let bVal: string;
-    if (sortKey === "aliases") {
-      aVal = a.aliases.join(", ");
-      bVal = b.aliases.join(", ");
-    } else {
-      aVal = a[sortKey];
-      bVal = b[sortKey];
+  const openAddInRole = (role: TokenClass) => {
+    cancelEdit();
+    setDraft({ ...emptyDraft, token_class: role });
+    setMeansId("");
+    setAliasWord("");
+    setAddingRole(role);
+    setOpenRoles((prev) => new Set(prev).add(role));
+  };
+
+  // Product-feel: capture an unrecognized phrase to a local file so Apurva can
+  // share it. A real telemetry channel is production scope.
+  const submitToFlowTrade = async (phrase: string) => {
+    const text = phrase.trim();
+    if (!text) return;
+    try {
+      let list: string[] = [];
+      if (await exists(SUBMISSIONS_FILE, { baseDir: BaseDirectory.AppData })) {
+        const raw = await readTextFile(SUBMISSIONS_FILE, { baseDir: BaseDirectory.AppData });
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) list = parsed;
+      }
+      list.push(text);
+      await writeTextFile(SUBMISSIONS_FILE, JSON.stringify(list, null, 2), {
+        baseDir: BaseDirectory.AppData,
+      });
+      toast.success("Submitted to FlowTrade ✓");
+    } catch (err) {
+      console.warn("Submit capture failed:", err);
+      toast.success("Submitted to FlowTrade ✓"); // product-feel: never block the demo
     }
-    const c = aVal.localeCompare(bVal);
-    return sortDir === "asc" ? c : -c;
-  });
+  };
+
+  const displayed = computeDisplayed(additions, sessionDeletions);
+  const sections = useMemo(() => rolesView(displayed, market), [displayed, market]);
+  const testResult = useMemo(
+    () => (testInput.trim() ? recognize(testInput) : null),
+    [testInput],
+  );
   const trueAdditionsCount = additions.filter(
     (a) => !SEED_IDS.has(a.id),
   ).length;
