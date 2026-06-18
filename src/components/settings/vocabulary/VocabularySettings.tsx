@@ -490,11 +490,99 @@ export const VocabularySettings: React.FC<VocabularySettingsProps> = ({
         </button>
       </div>
 
-      {/* ANATOMY STRIP — inserted in Task 4 (placeholder comment for now) */}
-      {/* ANATOMY_STRIP */}
+      {/* ANATOMY STRIP */}
+      <div className="text-[0.7rem] uppercase tracking-wider text-mid-gray/70 mb-2">
+        A market, in the order you say it
+      </div>
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        {([
+          { kind: "word", role: "product", label: "Product", eg: "HH · waha" },
+          { kind: "word", role: "tenor", label: "Month / Yr", eg: "K · Cal27" },
+          { kind: "num", label: "Strikes", eg: "engine" },
+          { kind: "word", role: "strategy", label: "Strategy", eg: "cs · strd" },
+          { kind: "word", role: "side", label: "Side", eg: "bid · offer" },
+          { kind: "num", label: "Ref / Premium", eg: "engine" },
+          { kind: "word", role: "venue", label: "Venue", eg: "ICE · NYMEX" },
+        ] as { kind: "word" | "num"; role?: TokenClass; label: string; eg: string }[]).map(
+          (slot, i, arr) => (
+            <React.Fragment key={slot.label}>
+              {slot.kind === "word" ? (
+                <button
+                  onClick={() => {
+                    setOpenRoles((prev) => new Set(prev).add(slot.role!));
+                    document.getElementById(`role-${slot.role}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
+                  className="min-w-[78px] rounded-lg border border-logo-primary/45 bg-logo-primary/10 px-3 py-2 text-center cursor-pointer"
+                >
+                  <span className="block text-xs text-logo-primary">{slot.label}</span>
+                  <span className="block text-[0.64rem] text-mid-gray mt-0.5">{slot.eg}</span>
+                </button>
+              ) : (
+                <div className="min-w-[78px] rounded-lg border border-border bg-surface px-3 py-2 text-center">
+                  <span className="flex items-center justify-center gap-1 text-xs text-mid-gray/70">
+                    {slot.label} <Lock className="w-3 h-3" />
+                  </span>
+                  <span className="block text-[0.64rem] text-mid-gray/70 mt-0.5">{slot.eg}</span>
+                </div>
+              )}
+              {i < arr.length - 1 && <span className="text-mid-gray/60">→</span>}
+            </React.Fragment>
+          ),
+        )}
+      </div>
+      <p className="text-xs text-mid-gray mb-6">
+        <span className="text-logo-primary font-semibold">Amber slots</span> = words you add &amp; verify.{" "}
+        <span className="text-mid-gray/70">🔒 Grey slots</span> = numbers the engine derives by position — you never teach a price or strike. (Tap a word slot to jump to its vocabulary.)
+      </p>
 
-      {/* TEST-IT BOX — inserted in Task 4 (placeholder comment for now) */}
-      {/* TEST_IT_BOX */}
+      {/* TEST-IT BOX */}
+      <div className="rounded-xl border border-border bg-surface p-4 mb-6">
+        <div className="text-[0.72rem] uppercase tracking-wider text-mid-gray/70 mb-2">
+          Test it — type or speak a market
+        </div>
+        <Input
+          type="text"
+          value={testInput}
+          onChange={(e) => setTestInput(e.target.value)}
+          placeholder="e.g. henry hub call spread 3.25 by 4 ref 2.95, 6 by 6 and a half"
+          className="font-mono"
+        />
+        {testInput.trim() && (
+          isQuote(testResult) ? (
+            <>
+              <div className="flex items-center gap-2.5 mt-3">
+                <span className="text-xs text-mid-gray/70">becomes</span>
+                <span className="font-mono text-sm text-text">{testResult.raw}</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {([
+                  ["product", "product"],
+                  ["strategy", "strategy"],
+                  ["side", "side"],
+                  ["contract", "month/tenor"],
+                  ["venue", "venue"],
+                ] as [string, string][])
+                  .filter(([k]) => testResult.structured[k])
+                  .map(([k, label]) => (
+                    <span key={k} className="text-[0.68rem] text-mid-gray bg-surface border border-border rounded-full px-2.5 py-1">
+                      <b className="text-logo-primary font-semibold">{String(testResult.structured[k])}</b> {label}
+                    </span>
+                  ))}
+                <span className="text-[0.68rem] text-mid-gray bg-surface border border-border rounded-full px-2.5 py-1">
+                  numbers → <b className="text-logo-primary font-semibold">engine</b>
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between gap-3 mt-3">
+              <span className="text-sm text-mid-gray">Not recognized as a market yet.</span>
+              <Button onClick={() => submitToFlowTrade(testInput)} variant="secondary" size="sm" className="inline-flex items-center gap-1">
+                <Send className="w-3 h-3" /> Submit to FlowTrade
+              </Button>
+            </div>
+          )
+        )}
+      </div>
 
       {/* RESET CONFIRM */}
       {showResetConfirm && (
