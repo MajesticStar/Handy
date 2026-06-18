@@ -136,7 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         key={item.id}
         className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
           isActive
-            ? "bg-logo-primary/80"
+            ? "bg-logo-primary/80 text-accent-fg"
             : "hover:bg-mid-gray/20 hover:opacity-100 opacity-85"
         }`}
         onClick={() => onItemChange(item.id)}
