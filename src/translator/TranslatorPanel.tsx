@@ -55,7 +55,7 @@ const CONFIRM_LABELS: Record<string, string> = {
 // Manual header drag — the declarative drag-region doesn't take on this
 // NSPanel, so we move the window ourselves from pointer deltas.
 function startDrag(e: React.PointerEvent) {
-  if ((e.target as HTMLElement).closest(".ft-close")) return;
+  if ((e.target as HTMLElement).closest("button")) return;
   const win = getCurrentWindow();
   const dpr = window.devicePixelRatio;
   const sx = e.screenX;
@@ -78,20 +78,12 @@ function startDrag(e: React.PointerEvent) {
   });
 }
 
-const PanelHeader: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => (
-  <div className="ft-header" onPointerDown={startDrag}>
-    <span className="ft-title">FlowTrade</span>
-    <button className="ft-close" onClick={onDismiss} aria-label="Dismiss">
-      ×
-    </button>
-  </div>
-);
-
 const TranslatorPanel: React.FC = () => {
   const [quote, setQuote] = useState<RecognizedQuote | QuoteHint | null>(null);
   // A near-miss: couldn't read it as a market, but it looked like a quote
   // attempt (probably a mis-heard word) — offer to teach the word.
   const [teachPhrase, setTeachPhrase] = useState<string | null>(null);
+  const [showPlain, setShowPlain] = useState(false);
 
   useEffect(() => {
     const setup = listen<string>("flowtrade-transcription", async (event) => {
@@ -106,6 +98,7 @@ const TranslatorPanel: React.FC = () => {
       });
       if (result) {
         setTeachPhrase(null);
+        setShowPlain(false);
         setQuote(result);
         await invoke("show_translator_panel");
       } else if (looksLikeQuoteAttempt(event.payload)) {
@@ -140,15 +133,15 @@ const TranslatorPanel: React.FC = () => {
 
   if (teachPhrase && !quote) {
     return (
-      <div className="ft-panel">
-        <PanelHeader onDismiss={dismiss} />
-        <div className="ft-teach">
-          <div className="ft-teach-msg">Didn't catch that as a market.</div>
-          <div className="ft-teach-heard">“{teachPhrase}”</div>
-          <button className="ft-teach-btn" onClick={teach}>
-            Teach FlowTrade a word
-          </button>
-        </div>
+      <div className="ft-bubble ft-bubble-teach" onPointerDown={startDrag}>
+        <button className="ft-close" onClick={dismiss} aria-label="Dismiss">
+          ×
+        </button>
+        <div className="ft-teach-msg">Didn't catch that as a market.</div>
+        <div className="ft-teach-heard">"{teachPhrase}"</div>
+        <button className="ft-teach-btn" onClick={teach}>
+          Teach FlowTrade a word
+        </button>
       </div>
     );
   }
@@ -157,38 +150,42 @@ const TranslatorPanel: React.FC = () => {
 
   if (!isQuote(quote)) {
     return (
-      <div className="ft-panel">
-        <PanelHeader onDismiss={dismiss} />
+      <div className="ft-bubble ft-bubble-hint" onPointerDown={startDrag}>
+        <button className="ft-close" onClick={dismiss} aria-label="Dismiss">
+          ×
+        </button>
         <div className="ft-hint">{quote.hint}</div>
       </div>
     );
   }
 
   return (
-    <div className="ft-panel">
-      <PanelHeader onDismiss={dismiss} />
-
-      <div className="ft-panes">
-        <div className="ft-pane ft-pane-raw">
-          <div className="ft-pane-label">Shorthand</div>
-          <div className="ft-raw">{quote.raw}</div>
-        </div>
-        <div className="ft-pane ft-pane-expanded">
-          <div className="ft-pane-label">Plain English</div>
-          <div className="ft-expanded">{quote.expanded}</div>
-        </div>
+    <div className="ft-bubble" onPointerDown={startDrag}>
+      <button className="ft-close" onClick={dismiss} aria-label="Dismiss">
+        ×
+      </button>
+      <div className="ft-shorthand">{quote.raw}</div>
+      <div className="ft-status">
+        <span className="ft-canonical">
+          <span className="ft-dot" />
+          Canonical
+        </span>
+        {quote.needsConfirm.length > 0 && (
+          <span className="ft-confirm">
+            ⚠ confirm:{" "}
+            {quote.needsConfirm
+              .map((f) => CONFIRM_LABELS[f] ?? f)
+              .join(" · ")}
+          </span>
+        )}
+        <button
+          className="ft-expander"
+          onClick={() => setShowPlain((s) => !s)}
+        >
+          Plain English {showPlain ? "⌃" : "⌄"}
+        </button>
       </div>
-
-      {quote.needsConfirm.length > 0 && (
-        <div className="ft-confirm">
-          <span className="ft-confirm-label">Confirm:</span>
-          {quote.needsConfirm.map((field) => (
-            <span key={field} className="ft-confirm-chip">
-              {CONFIRM_LABELS[field] ?? field}
-            </span>
-          ))}
-        </div>
-      )}
+      {showPlain && <div className="ft-plain">{quote.expanded}</div>}
     </div>
   );
 };
