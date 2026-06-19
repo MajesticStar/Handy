@@ -4,20 +4,80 @@
 .fb-bar {
   display: flex;
   align-items: center;
+  gap: 8px;
   height: 100%;
   padding: 0 10px;
+  background: transparent;
+  border-radius: 16px;
+  transition: background 120ms ease;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.fb-bar.fb-expanded {
+  background: rgba(20, 20, 22, 0.92);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 .fb-pill {
   display: flex;
   align-items: center;
+  gap: 6px;
   background: rgba(20, 20, 22, 0.92);
   border-radius: 999px;
   padding: 8px 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
+.fb-bar.fb-expanded .fb-pill {
+  background: transparent;
+  box-shadow: none;
+  padding: 8px 4px;
+}
 .fb-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #6b7280;
+  background: #6b7280; /* grey = no canonical quote yet */
+  transition: background 200ms ease;
+}
+.fb-dot-on {
+  background: #34d399; /* green = FlowTrade's canonical quote in use */
+}
+.fb-levels {
+  width: 22px;
+  height: 12px;
+  border-radius: 3px;
+  background: #34d399;
+  animation: fb-pulse 900ms ease-in-out infinite;
+}
+@keyframes fb-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scaleY(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+.fb-actions {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+.fb-bar.fb-expanded .fb-actions {
+  display: flex;
+}
+.fb-action {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #eee;
+}
+.fb-action:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
