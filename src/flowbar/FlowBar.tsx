@@ -1,5 +1,9 @@
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWindow, PhysicalPosition } from "@tauri-apps/api/window";
+import {
+  cursorPosition,
+  getCurrentWindow,
+  PhysicalPosition,
+} from "@tauri-apps/api/window";
 import { BaseDirectory, exists, readTextFile } from "@tauri-apps/plugin-fs";
 import React, { useEffect, useState } from "react";
 import {
@@ -96,6 +100,33 @@ const FlowBar: React.FC = () => {
       sub.then((un) => un());
     };
   }, []);
+
+  // Collapse reliably. A non-activating floating panel doesn't get a dependable
+  // mouse-leave from macOS (especially once the cursor is over another app), so
+  // onMouseLeave alone leaves the bar stuck open. While expanded, poll the cursor
+  // and collapse once it's outside the bar's rectangle. Runs only while expanded.
+  useEffect(() => {
+    if (!expanded) return;
+    const win = getCurrentWindow();
+    const id = window.setInterval(async () => {
+      try {
+        const [cur, pos, size] = await Promise.all([
+          cursorPosition(),
+          win.outerPosition(),
+          win.outerSize(),
+        ]);
+        const outside =
+          cur.x < pos.x ||
+          cur.x > pos.x + size.width ||
+          cur.y < pos.y ||
+          cur.y > pos.y + size.height;
+        if (outside) setExpanded(false);
+      } catch {
+        // Transient read failure — keep current state, try again next tick.
+      }
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [expanded]);
 
   return (
     <div
