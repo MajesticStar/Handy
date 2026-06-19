@@ -1,0 +1,23 @@
+:root {
+  color-scheme: dark;
+}
+.fb-bar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 10px;
+}
+.fb-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(20, 20, 22, 0.92);
+  border-radius: 999px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+.fb-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6b7280;
+}

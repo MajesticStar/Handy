@@ -6,6 +6,7 @@ pub mod audio_toolkit;
 pub mod cli;
 mod clipboard;
 mod commands;
+mod flowbar;
 mod helpers;
 mod input;
 mod llm_client;
@@ -296,6 +297,9 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Create the FlowTrade translator panel (hidden by default)
     panel::create_translator_panel(app_handle);
+
+    // Create the FlowTrade FlowBar (visible, always-on cockpit control)
+    flowbar::create_flowbar(app_handle);
 }
 
 #[tauri::command]

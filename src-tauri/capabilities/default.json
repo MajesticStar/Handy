@@ -5,7 +5,8 @@
   "windows": [
     "main",
     "recording_overlay",
-    "translator_panel"
+    "translator_panel",
+    "flowbar"
   ],
   "permissions": [
     "core:default",
