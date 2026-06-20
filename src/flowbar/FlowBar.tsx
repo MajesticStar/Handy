@@ -101,12 +101,12 @@ const FlowBar: React.FC = () => {
     };
   }, []);
 
-  // Collapse reliably. A non-activating floating panel doesn't get a dependable
-  // mouse-leave from macOS (especially once the cursor is over another app), so
-  // onMouseLeave alone leaves the bar stuck open. While expanded, poll the cursor
-  // and collapse once it's outside the bar's rectangle. Runs only while expanded.
+  // Hover expand/collapse, geometry-driven. A non-activating floating panel
+  // doesn't get dependable mouse-enter/leave from macOS — and they go stale
+  // after the window is dragged — so deriving "expanded" from those events is
+  // flaky. Instead, poll the cursor against the bar's rect: expand when it's
+  // inside, collapse when it's outside. Cheap (three reads), always correct.
   useEffect(() => {
-    if (!expanded) return;
     const win = getCurrentWindow();
     const id = window.setInterval(async () => {
       try {
@@ -115,25 +115,23 @@ const FlowBar: React.FC = () => {
           win.outerPosition(),
           win.outerSize(),
         ]);
-        const outside =
-          cur.x < pos.x ||
-          cur.x > pos.x + size.width ||
-          cur.y < pos.y ||
-          cur.y > pos.y + size.height;
-        if (outside) setExpanded(false);
+        setExpanded(
+          cur.x >= pos.x &&
+            cur.x <= pos.x + size.width &&
+            cur.y >= pos.y &&
+            cur.y <= pos.y + size.height,
+        );
       } catch {
-        // Transient read failure — keep current state, try again next tick.
+        // Transient read failure — leave state as-is, try again next tick.
       }
-    }, 200);
+    }, 120);
     return () => window.clearInterval(id);
-  }, [expanded]);
+  }, []);
 
   return (
     <div
       className={"fb-bar" + (expanded ? " fb-expanded" : "")}
       onPointerDown={startDrag}
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
     >
       <div className="fb-pill">
         <span className={"fb-dot" + (canonical ? " fb-dot-on" : "")} />
