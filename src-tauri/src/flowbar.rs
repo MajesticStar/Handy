@@ -12,7 +12,7 @@ use tauri::{AppHandle, Manager};
 use tauri::WebviewUrl;
 
 #[cfg(target_os = "macos")]
-use tauri_nspanel::{tauri_panel, CollectionBehavior, PanelBuilder, PanelLevel};
+use tauri_nspanel::{tauri_panel, CollectionBehavior, PanelBuilder, PanelLevel, StyleMask};
 
 #[cfg(not(target_os = "macos"))]
 use tauri::WebviewWindowBuilder;
@@ -63,6 +63,11 @@ pub fn create_flowbar(app_handle: &AppHandle) {
         .has_shadow(false)
         .transparent(true)
         .no_activate(true)
+        // Make the bar truly non-activating. Without the NonactivatingPanel
+        // style mask, pressing/dragging it activates the FlowTrade app, which —
+        // if the dashboard sits on another Space — yanks the user to that Space.
+        // (no_activate above only covers app activation during creation.)
+        .style_mask(StyleMask::empty().nonactivating_panel())
         .with_window(|w| w.decorations(false).transparent(true))
         .collection_behavior(
             CollectionBehavior::new()
