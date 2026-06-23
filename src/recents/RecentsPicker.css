@@ -1,5 +1,160 @@
-:root { color-scheme: dark; --color-logo-primary: #ffb23e; }
-html, body, #root { margin: 0; height: 100%; background: transparent; }
-.rp-root { height: 100%; background: rgba(12,12,14,0.96); border-radius: 12px;
-  padding: 10px; color: #eee; font: 13px Inter, system-ui, sans-serif; }
-.rp-title { font-weight: 600; margin-bottom: 6px; }
+/* FlowTrade Recents picker — fixed 320×260 dark surface, amber accent.
+   Self-contained (no App.css import); tokens match the other FlowTrade panels. */
+
+:root {
+  color-scheme: dark;
+  --color-logo-primary: #ffb23e;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+}
+
+.rp-root {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #101013;
+  border: 1px solid #262630;
+  border-radius: 12px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  color: #edeef0;
+  overflow: hidden;
+}
+
+.rp-header {
+  flex-shrink: 0;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid #1e1e24;
+}
+
+.rp-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-logo-primary);
+  letter-spacing: 0.02em;
+}
+
+/* Scrollable list area fills the space between header and footer. */
+.rp-list {
+  flex: 1 1 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+}
+
+.rp-empty {
+  padding: 18px 14px;
+  color: #5a5a63;
+  font-size: 13px;
+}
+
+.rp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #edeef0;
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  border-radius: 0;
+  transition: background 80ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.rp-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rp-row-selected {
+  background: rgba(255, 178, 62, 0.12);
+}
+
+.rp-row-selected:hover {
+  background: rgba(255, 178, 62, 0.18);
+}
+
+.rp-check {
+  flex-shrink: 0;
+  width: 14px;
+  font-size: 12px;
+  color: var(--color-logo-primary);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rp-shorthand {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sticky footer — Copy + × side by side. */
+.rp-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid #1e1e24;
+}
+
+.rp-copy {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  border-radius: 7px;
+  background: var(--color-logo-primary);
+  color: #0a0a0a;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 80ms ease;
+}
+
+.rp-copy:hover:not(:disabled) {
+  background: #ffc163;
+}
+
+.rp-copy:disabled {
+  background: #2a2a30;
+  color: #5a5a63;
+  cursor: default;
+}
+
+.rp-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #5a5a63;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 80ms ease, background 80ms ease;
+}
+
+.rp-close:hover {
+  color: #edeef0;
+  background: rgba(255, 255, 255, 0.08);
+}
