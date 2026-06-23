@@ -342,6 +342,14 @@ fn submit_flowtrade_translation(raw: Option<String>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+fn toggle_dictation(app: AppHandle) {
+    // Same path the hotkey/CLI use; "transcribe" = no post-processing.
+    // Source label is for logging only.
+    signal_handle::send_transcription_input(&app, "transcribe", "flowbar");
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run(cli_args: CliArgs) {
     // Detect portable mode before anything else
@@ -408,6 +416,7 @@ pub fn run(cli_args: CliArgs) {
             show_translator_panel,
             hide_translator_panel,
             submit_flowtrade_translation,
+            toggle_dictation,
             commands::cancel_operation,
             commands::is_portable,
             commands::get_app_dir_path,

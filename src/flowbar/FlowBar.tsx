@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
   cursorPosition,
@@ -60,6 +61,15 @@ function startDrag(e: React.PointerEvent) {
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
   });
+}
+
+function onAction(key: string) {
+  if (key === "dictate") {
+    invoke("toggle_dictation").catch((e) =>
+      console.warn("toggle_dictation failed:", e),
+    );
+  }
+  // other tools wired in later tasks/plans
 }
 
 // The six cockpit tools. Click-actions are wired in follow-on plans; here they
@@ -144,6 +154,7 @@ const FlowBar: React.FC = () => {
             className="fb-action"
             title={a.label}
             aria-label={a.label}
+            onClick={() => onAction(a.key)}
           >
             {a.glyph}
           </button>
