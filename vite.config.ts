@@ -25,6 +25,7 @@ export default defineConfig(async () => ({
         overlay: resolve(__dirname, "src/overlay/index.html"),
         translator: resolve(__dirname, "src/translator/index.html"),
         flowbar: resolve(__dirname, "src/flowbar/index.html"),
+        recents: resolve(__dirname, "src/recents/index.html"),
       },
     },
   },

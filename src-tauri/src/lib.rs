@@ -14,6 +14,7 @@ mod managers;
 mod overlay;
 mod panel;
 pub mod portable;
+mod recents;
 mod settings;
 mod shortcut;
 mod signal_handle;
@@ -300,6 +301,9 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Create the FlowTrade FlowBar (visible, always-on cockpit control)
     flowbar::create_flowbar(app_handle);
+
+    // Create the FlowTrade Recents picker (hidden by default)
+    recents::create_recents_picker(app_handle);
 }
 
 #[tauri::command]
@@ -417,6 +421,8 @@ pub fn run(cli_args: CliArgs) {
             hide_translator_panel,
             submit_flowtrade_translation,
             toggle_dictation,
+            recents::show_recents_picker,
+            recents::hide_recents_picker,
             commands::cancel_operation,
             commands::is_portable,
             commands::get_app_dir_path,

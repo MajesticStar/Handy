@@ -6,7 +6,8 @@
     "main",
     "recording_overlay",
     "translator_panel",
-    "flowbar"
+    "flowbar",
+    "recents"
   ],
   "permissions": [
     "core:default",
@@ -38,6 +39,7 @@
     "core:window:allow-outer-position",
     "core:window:allow-set-position",
     "core:window:allow-outer-size",
-    "core:window:allow-cursor-position"
+    "core:window:allow-cursor-position",
+    "clipboard-manager:allow-write-text"
   ]
 }

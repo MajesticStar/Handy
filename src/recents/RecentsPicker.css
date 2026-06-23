@@ -1,0 +1,5 @@
+:root { color-scheme: dark; --color-logo-primary: #ffb23e; }
+html, body, #root { margin: 0; height: 100%; background: transparent; }
+.rp-root { height: 100%; background: rgba(12,12,14,0.96); border-radius: 12px;
+  padding: 10px; color: #eee; font: 13px Inter, system-ui, sans-serif; }
+.rp-title { font-weight: 600; margin-bottom: 6px; }
