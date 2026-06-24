@@ -69,6 +69,11 @@ function onAction(key: string) {
       console.warn("toggle_dictation failed:", e),
     );
   }
+  if (key === "recents") {
+    invoke("show_recents_picker").catch((e) =>
+      console.warn("show_recents_picker failed:", e),
+    );
+  }
   // other tools wired in later tasks/plans
 }
 
