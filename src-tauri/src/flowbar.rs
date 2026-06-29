@@ -32,9 +32,10 @@ const FLOWBAR_WIDTH: f64 = 360.0;
 const FLOWBAR_HEIGHT: f64 = 64.0;
 const FLOWBAR_BOTTOM_OFFSET: f64 = 40.0;
 
-/// Bottom-center of the primary monitor, in logical points.
+/// Bottom-center of the monitor under the cursor, in logical points.
+/// Falls back to the primary monitor if the cursor position is unavailable.
 fn flowbar_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
-    let monitor = app_handle.primary_monitor().ok().flatten()?;
+    let monitor = crate::overlay::get_monitor_with_cursor(app_handle)?;
     let scale = monitor.scale_factor();
     let mon_x = monitor.position().x as f64 / scale;
     let mon_y = monitor.position().y as f64 / scale;

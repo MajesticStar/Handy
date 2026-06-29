@@ -12,6 +12,19 @@ impl EnigoState {
             .map_err(|e| format!("Failed to initialize Enigo: {}", e))?;
         Ok(Self(Mutex::new(enigo)))
     }
+
+    /// Like `new()` but never shows the macOS Accessibility prompt (enigo's
+    /// Settings default would). Used for best-effort startup cursor lookup before
+    /// onboarding; the real permission-grant flow still goes through `new()`.
+    pub fn new_no_prompt() -> Result<Self, String> {
+        let settings = Settings {
+            open_prompt_to_get_permissions: false,
+            ..Default::default()
+        };
+        let enigo = Enigo::new(&settings)
+            .map_err(|e| format!("Failed to initialize Enigo: {}", e))?;
+        Ok(Self(Mutex::new(enigo)))
+    }
 }
 
 /// Get the current mouse cursor position using the managed Enigo instance.

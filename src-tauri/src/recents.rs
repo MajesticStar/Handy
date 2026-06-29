@@ -32,9 +32,10 @@ const RECENTS_WIDTH: f64 = 320.0;
 const RECENTS_HEIGHT: f64 = 260.0;
 const RECENTS_BOTTOM_OFFSET: f64 = 120.0;
 
-/// Bottom-center of the primary monitor, in logical points.
+/// Bottom-center of the monitor under the cursor, in logical points.
+/// Falls back to the primary monitor if the cursor position is unavailable.
 fn recents_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
-    let monitor = app_handle.primary_monitor().ok().flatten()?;
+    let monitor = crate::overlay::get_monitor_with_cursor(app_handle)?;
     let scale = monitor.scale_factor();
     let mon_x = monitor.position().x as f64 / scale;
     let mon_y = monitor.position().y as f64 / scale;
@@ -118,6 +119,14 @@ pub fn create_recents_picker(app_handle: &AppHandle) {
 #[specta::specta]
 pub fn show_recents_picker(app: AppHandle) {
     if let Some(win) = app.get_webview_window(RECENTS_LABEL) {
+        // Reposition to the monitor under the cursor each time the picker opens.
+        // The cursor is on the FlowBar when the trader clicks Recents, and
+        // EnigoState is ready by then (initialized at startup, or after the
+        // permission grant). Logical position avoids the cross-monitor
+        // scale-factor bug in Tauri/tao.
+        if let Some((x, y)) = recents_position(&app) {
+            let _ = win.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
+        }
         let _ = win.show();
         // Tell the webview to refresh its list each time it opens.
         let _ = app.emit("recents-refresh", ());

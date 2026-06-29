@@ -299,6 +299,19 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // Create the FlowTrade translator panel (hidden by default)
     panel::create_translator_panel(app_handle);
 
+    // Initialize cursor/input state early so the FlowBar and Recents picker can
+    // place themselves on the monitor under the cursor at startup. Best-effort
+    // and non-prompting: on macOS this needs Accessibility, but new_no_prompt()
+    // never shows the system permission dialog (unlike new()), so if the grant
+    // isn't in place yet it just returns Err quietly and positioning falls back
+    // to the primary monitor. The real grant flow + initialize_enigo wire up the
+    // managed EnigoState later.
+    if app_handle.try_state::<crate::input::EnigoState>().is_none() {
+        if let Ok(enigo_state) = crate::input::EnigoState::new_no_prompt() {
+            app_handle.manage(enigo_state);
+        }
+    }
+
     // Create the FlowTrade FlowBar (visible, always-on cockpit control)
     flowbar::create_flowbar(app_handle);
 
